@@ -1,0 +1,3492 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>IanTest — Sistem Ujian Digital</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #06080f;
+        --bg2: #0d1120;
+        --bg3: #111827;
+        --bg4: #1a2235;
+        --bg5: #1e293b;
+        --border: rgba(255, 255, 255, 0.06);
+        --border2: rgba(255, 255, 255, 0.1);
+        --border3: rgba(255, 255, 255, 0.18);
+        --accent: #3b82f6;
+        --accent-light: rgba(59, 130, 246, 0.15);
+        --accent-glow: rgba(59, 130, 246, 0.3);
+        --green: #10b981;
+        --green-light: rgba(16, 185, 129, 0.15);
+        --warn: #f59e0b;
+        --warn-light: rgba(245, 158, 11, 0.15);
+        --red: #ef4444;
+        --red-light: rgba(239, 68, 68, 0.15);
+        --purple: #8b5cf6;
+        --purple-light: rgba(139, 92, 246, 0.15);
+        --text: #f1f5f9;
+        --text2: #94a3b8;
+        --text3: #475569;
+        --mono: "JetBrains Mono", monospace;
+        --sans: "Plus Jakarta Sans", sans-serif;
+        --r: 12px;
+        --r-lg: 18px;
+        --sidebar: 260px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html,
+      body {
+        height: 100%;
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--bg5);
+        border-radius: 99px;
+      }
+      input,
+      button,
+      textarea,
+      select {
+        font-family: var(--sans);
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes pulse-slow {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.6;
+        }
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+        70% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      @keyframes shimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+
+      .screen {
+        display: none;
+        min-height: 100vh;
+        animation: fadeIn 0.25s ease;
+      }
+      .screen.on {
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ================================================================
+   HOME
+================================================================ */
+      #s-home {
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding: 2rem 1rem;
+      }
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+        pointer-events: none;
+      }
+      .orb1 {
+        width: 480px;
+        height: 480px;
+        background: radial-gradient(
+          circle,
+          rgba(59, 130, 246, 0.1),
+          transparent 70%
+        );
+        top: -120px;
+        right: -80px;
+      }
+      .orb2 {
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(
+          circle,
+          rgba(16, 185, 129, 0.08),
+          transparent 70%
+        );
+        bottom: -80px;
+        left: -60px;
+      }
+      .home-wrap {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 460px;
+        text-align: center;
+        animation: fadeUp 0.5s ease;
+      }
+      .home-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--accent-light);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 99px;
+        padding: 5px 14px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 2px;
+        color: var(--accent);
+        text-transform: uppercase;
+        margin-bottom: 1.75rem;
+      }
+      .home-badge span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: pulse-slow 2s infinite;
+      }
+      .home-title {
+        font-size: clamp(1.8rem, 6vw, 3.2rem);
+        font-weight: 800;
+        line-height: 1.12;
+        margin-bottom: 0.75rem;
+        background: linear-gradient(135deg, #f1f5f9 30%, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .home-sub {
+        font-size: 14px;
+        color: var(--text2);
+        margin-bottom: 2.5rem;
+        line-height: 1.65;
+        max-width: 340px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .home-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .home-card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 1.75rem 1rem;
+        cursor: pointer;
+        transition: all 0.22s ease;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+      }
+      .home-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: var(--r-lg);
+        opacity: 0;
+        transition: opacity 0.22s;
+      }
+      .home-card:hover {
+        border-color: var(--border2);
+        transform: translateY(-3px);
+      }
+      .home-card:active {
+        transform: scale(0.97);
+      }
+      .home-card.admin::after {
+        background: linear-gradient(
+          135deg,
+          rgba(59, 130, 246, 0.07),
+          transparent
+        );
+      }
+      .home-card.peserta::after {
+        background: linear-gradient(
+          135deg,
+          rgba(16, 185, 129, 0.07),
+          transparent
+        );
+      }
+      .home-card:hover::after {
+        opacity: 1;
+      }
+      .hc-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 22px;
+      }
+      .admin .hc-icon {
+        background: var(--accent-light);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+      }
+      .peserta .hc-icon {
+        background: var(--green-light);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+      }
+      .hc-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .hc-desc {
+        font-size: 12px;
+        color: var(--text2);
+      }
+
+      /* ================================================================
+   GLOBAL UI COMPONENTS
+================================================================ */
+      .topbar {
+        background: var(--bg2);
+        border-bottom: 1px solid var(--border);
+        padding: 0.875rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        flex-shrink: 0;
+      }
+      .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .topbar-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .topbar-sub {
+        font-size: 11px;
+        color: var(--text2);
+        margin-top: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 9px 18px;
+        border-radius: var(--r);
+        border: 1px solid var(--border2);
+        background: var(--bg4);
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        white-space: nowrap;
+        font-family: var(--sans);
+      }
+      .btn:hover {
+        background: var(--bg5);
+        border-color: var(--border3);
+      }
+      .btn:active {
+        transform: scale(0.96);
+      }
+      .btn-primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #2563eb;
+        border-color: #2563eb;
+        box-shadow: 0 4px 20px var(--accent-glow);
+      }
+      .btn-green {
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
+      }
+      .btn-green:hover {
+        background: #059669;
+        box-shadow: 0 4px 20px var(--green-light);
+      }
+      .btn-red {
+        background: var(--red);
+        border-color: var(--red);
+        color: #fff;
+      }
+      .btn-red:hover {
+        background: #dc2626;
+      }
+      .btn-warn {
+        background: var(--warn);
+        border-color: var(--warn);
+        color: #000;
+      }
+      .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 8px;
+      }
+      .btn-icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border-radius: 9px;
+      }
+
+      .inp {
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: var(--r);
+        color: var(--text);
+        font-size: 14px;
+        font-family: var(--sans);
+        outline: none;
+        transition:
+          border-color 0.18s,
+          box-shadow 0.18s;
+      }
+      .inp:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-light);
+      }
+      .inp::placeholder {
+        color: var(--text3);
+      }
+      textarea.inp {
+        resize: vertical;
+        min-height: 80px;
+        line-height: 1.6;
+      }
+      select.inp {
+        cursor: pointer;
+      }
+      label.lbl {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text2);
+        margin-bottom: 6px;
+        letter-spacing: 0.3px;
+      }
+      .form-row {
+        margin-bottom: 1rem;
+      }
+      .err-msg {
+        font-size: 12px;
+        color: var(--red);
+        margin-top: 6px;
+        display: none;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 9px;
+        border-radius: 99px;
+      }
+      .badge-blue {
+        background: var(--accent-light);
+        color: var(--accent);
+        border: 1px solid rgba(59, 130, 246, 0.25);
+      }
+      .badge-green {
+        background: var(--green-light);
+        color: var(--green);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+      }
+      .badge-warn {
+        background: var(--warn-light);
+        color: var(--warn);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+      }
+      .badge-red {
+        background: var(--red-light);
+        color: var(--red);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+      }
+      .badge-purple {
+        background: var(--purple-light);
+        color: var(--purple);
+        border: 1px solid rgba(139, 92, 246, 0.25);
+      }
+
+      .card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 1.25rem;
+      }
+      .card-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 1rem;
+      }
+
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 1rem 0;
+      }
+
+      /* ================================================================
+   LOGIN SCREENS
+================================================================ */
+      #s-admin-login,
+      #s-peserta-login {
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background: var(--bg);
+      }
+      .login-box {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        padding: 2rem;
+        width: 100%;
+        max-width: 400px;
+        animation: fadeUp 0.35s ease;
+        box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
+      }
+      .login-head {
+        text-align: center;
+        margin-bottom: 1.75rem;
+      }
+      .login-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 14px;
+        font-size: 26px;
+      }
+      .login-icon.blue {
+        background: var(--accent-light);
+        border: 1px solid rgba(59, 130, 246, 0.25);
+      }
+      .login-icon.green {
+        background: var(--green-light);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+      }
+      .login-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .login-sub {
+        font-size: 13px;
+        color: var(--text2);
+      }
+
+      /* ================================================================
+   ADMIN PANEL LAYOUT
+================================================================ */
+      #s-admin {
+        background: var(--bg);
+      }
+      .admin-layout {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        height: calc(100vh - 57px);
+        overflow: hidden;
+      }
+
+      /* SIDEBAR */
+      .sidebar {
+        width: var(--sidebar);
+        background: var(--bg2);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .sidebar-logo {
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .sidebar-logo-text {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.3px;
+      }
+      .sidebar-logo-sub {
+        font-size: 11px;
+        color: var(--text2);
+        margin-top: 2px;
+      }
+      .sidebar-section {
+        padding: 0.75rem 0.75rem 0.25rem;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text3);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+      }
+      .sidebar-menu {
+        padding: 0.25rem 0.75rem;
+      }
+      .smenu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: all 0.18s;
+        color: var(--text2);
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 2px;
+        border: 1px solid transparent;
+      }
+      .smenu-item:hover {
+        background: var(--bg3);
+        color: var(--text);
+      }
+      .smenu-item.active {
+        background: var(--accent-light);
+        color: var(--accent);
+        border-color: rgba(59, 130, 246, 0.2);
+      }
+      .smenu-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+      .smenu-count {
+        margin-left: auto;
+        background: var(--bg4);
+        padding: 2px 7px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text2);
+      }
+      .smenu-item.active .smenu-count {
+        background: rgba(59, 130, 246, 0.2);
+        color: var(--accent);
+      }
+      .sidebar-footer {
+        padding: 1rem;
+        border-top: 1px solid var(--border);
+        margin-top: auto;
+      }
+      .sidebar-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border-radius: 10px;
+        background: var(--bg3);
+      }
+      .sidebar-user-av {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--accent-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: var(--accent);
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+      .sidebar-user-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .sidebar-user-role {
+        font-size: 11px;
+        color: var(--text2);
+      }
+
+      /* MAIN CONTENT */
+      .admin-main {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .admin-page {
+        display: none;
+        padding: 1.5rem;
+        animation: fadeUp 0.25s ease;
+      }
+      .admin-page.on {
+        display: block;
+      }
+
+      /* STATS GRID */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin-bottom: 1.5rem;
+      }
+      .stat-card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 1.25rem;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.2s;
+      }
+      .stat-card:hover {
+        border-color: var(--border2);
+      }
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+      }
+      .stat-card.blue::before {
+        background: linear-gradient(90deg, var(--accent), transparent);
+      }
+      .stat-card.green::before {
+        background: linear-gradient(90deg, var(--green), transparent);
+      }
+      .stat-card.warn::before {
+        background: linear-gradient(90deg, var(--warn), transparent);
+      }
+      .stat-card.red::before {
+        background: linear-gradient(90deg, var(--red), transparent);
+      }
+      .stat-card.purple::before {
+        background: linear-gradient(90deg, var(--purple), transparent);
+      }
+      .stat-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+      }
+      .stat-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--text);
+        line-height: 1;
+        font-family: var(--mono);
+      }
+      .stat-sub {
+        font-size: 12px;
+        color: var(--text3);
+        margin-top: 4px;
+      }
+
+      /* TOKEN LIST */
+      .token-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .token-item {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.18s;
+      }
+      .token-item:hover {
+        border-color: var(--border2);
+      }
+      .token-code {
+        font-family: var(--mono);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+        letter-spacing: 2.5px;
+        flex-shrink: 0;
+      }
+      .token-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .token-session {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 2px;
+      }
+      .token-meta {
+        font-size: 12px;
+        color: var(--text2);
+      }
+      .token-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      /* SOAL LIST */
+      .soal-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .soal-item {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1rem 1.25rem;
+        transition: border-color 0.18s;
+      }
+      .soal-item:hover {
+        border-color: var(--border2);
+      }
+      .soal-num {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text2);
+        margin-bottom: 4px;
+      }
+      .soal-text {
+        font-size: 14px;
+        color: var(--text);
+        line-height: 1.55;
+        margin-bottom: 8px;
+      }
+      .soal-opts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .soal-opt {
+        font-size: 12px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        background: var(--bg4);
+        border: 1px solid var(--border);
+        color: var(--text2);
+      }
+      .soal-opt.correct {
+        background: var(--green-light);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: var(--green);
+        font-weight: 600;
+      }
+      .soal-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      /* RESPONSE TABLE */
+      .resp-table-wrap {
+        overflow-x: auto;
+        border-radius: var(--r);
+        border: 1px solid var(--border);
+      }
+      .resp-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        min-width: 600px;
+      }
+      .resp-table th {
+        padding: 0.75rem 1rem;
+        background: var(--bg3);
+        color: var(--text2);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: left;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--border);
+      }
+      .resp-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+        vertical-align: middle;
+      }
+      .resp-table tr:last-child td {
+        border-bottom: none;
+      }
+      .resp-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .resp-table .mono {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text2);
+      }
+
+      /* SECTION HEADER */
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .section-sub {
+        font-size: 13px;
+        color: var(--text2);
+        margin-top: 2px;
+      }
+
+      /* GENERATE TOKEN FORM */
+      .gen-form {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+      }
+      .gen-form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        align-items: end;
+        margin-bottom: 12px;
+      }
+
+      /* REALTIME DOT */
+      .rt-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: pulse-slow 1.5s infinite;
+        flex-shrink: 0;
+      }
+
+      /* MOBILE SIDEBAR OVERLAY */
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 199;
+        animation: fadeIn 0.2s ease;
+      }
+      .sidebar-overlay.on {
+        display: block;
+      }
+      .mobile-menu-btn {
+        display: none;
+      }
+
+      /* ================================================================
+   PESERTA LOGIN
+================================================================ */
+      #s-peserta-login .login-box {
+        border-color: rgba(16, 185, 129, 0.15);
+      }
+
+      /* ================================================================
+   UJIAN LAYOUT
+================================================================ */
+      #s-ujian {
+        background: var(--bg);
+        overflow: hidden;
+      }
+      .ujian-layout {
+        display: flex;
+        flex: 1;
+        height: calc(100vh - 57px);
+        overflow: hidden;
+      }
+
+      /* UJIAN SIDEBAR (soal nav) */
+      .ujian-sidebar {
+        width: 240px;
+        background: var(--bg2);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+      .ujian-sidebar-head {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+      }
+      .ujian-sidebar-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 8px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 0;
+      }
+      .leg-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: var(--text2);
+      }
+      .leg-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+      .leg-dot.answered {
+        background: var(--green);
+      }
+      .leg-dot.ragu {
+        background: var(--warn);
+      }
+      .leg-dot.empty {
+        background: var(--bg5);
+        border: 1px solid var(--border2);
+      }
+      .soal-grid {
+        padding: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        overflow-y: auto;
+        flex: 1;
+        align-content: flex-start;
+      }
+      .snum {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: 1.5px solid var(--border2);
+        background: var(--bg3);
+        color: var(--text2);
+      }
+      .snum:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .snum.active {
+        border-color: var(--accent);
+        background: var(--accent-light);
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .snum.answered {
+        background: var(--green-light);
+        border-color: rgba(16, 185, 129, 0.4);
+        color: var(--green);
+      }
+      .snum.ragu {
+        background: var(--warn-light);
+        border-color: rgba(245, 158, 11, 0.4);
+        color: var(--warn);
+      }
+      .snum.answered.active {
+        border-color: var(--green);
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+      }
+      .snum.ragu.active {
+        border-color: var(--warn);
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+      }
+
+      /* UJIAN MAIN */
+      .ujian-main {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .ujian-q-area {
+        flex: 1;
+        padding: 1.5rem;
+        max-width: 780px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .ujian-q-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .ujian-q-num {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .ujian-q-text {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text);
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        padding: 1.25rem;
+      }
+      .ujian-opts {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 1.5rem;
+      }
+      .opt {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 13px 16px;
+        border-radius: var(--r);
+        border: 1.5px solid var(--border2);
+        background: var(--bg2);
+        cursor: pointer;
+        transition: all 0.18s;
+        animation: fadeUp 0.2s ease both;
+      }
+      .opt:hover {
+        border-color: var(--border3);
+        background: var(--bg3);
+      }
+      .opt.selected {
+        border-color: var(--accent);
+        background: var(--accent-light);
+      }
+      .opt.correct {
+        border-color: var(--green);
+        background: var(--green-light);
+      }
+      .opt.wrong {
+        border-color: var(--red);
+        background: var(--red-light);
+      }
+      .opt-key {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+        background: var(--bg4);
+        color: var(--text2);
+        border: 1px solid var(--border2);
+        transition: all 0.18s;
+        margin-top: 1px;
+      }
+      .opt.selected .opt-key {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .opt.correct .opt-key {
+        background: var(--green);
+        color: #fff;
+        border-color: var(--green);
+      }
+      .opt.wrong .opt-key {
+        background: var(--red);
+        color: #fff;
+        border-color: var(--red);
+      }
+      .opt-text {
+        font-size: 14px;
+        color: var(--text);
+        line-height: 1.55;
+        flex: 1;
+      }
+
+      /* UJIAN NAV BOTTOM */
+      .ujian-nav {
+        background: var(--bg2);
+        border-top: 1px solid var(--border);
+        padding: 0.875rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+      .ujian-nav-center {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      /* TIMER */
+      .timer-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .timer-display {
+        font-family: var(--mono);
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        letter-spacing: 1px;
+      }
+      .timer-display.warn {
+        color: var(--warn);
+      }
+      .timer-display.danger {
+        color: var(--red);
+        animation: pulse-slow 0.8s infinite;
+      }
+      .timer-bar-outer {
+        height: 3px;
+        background: var(--bg4);
+        border-radius: 99px;
+        overflow: hidden;
+        flex: 1;
+        min-width: 60px;
+      }
+      .timer-bar-inner {
+        height: 100%;
+        border-radius: 99px;
+        background: var(--green);
+        transition:
+          width 1s linear,
+          background 0.5s;
+      }
+
+      /* UJIAN TOPBAR */
+      .ujian-topbar {
+        background: var(--bg2);
+        border-bottom: 1px solid var(--border);
+        padding: 0.875rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+      .ujian-top-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+      .ujian-top-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+      .progress-info {
+        font-size: 12px;
+        color: var(--text2);
+      }
+
+      /* MOBILE NAV TOGGLE for ujian */
+      .ujian-nav-toggle {
+        display: none;
+      }
+      .ujian-mobile-sidebar {
+        display: none;
+      }
+
+      /* ================================================================
+   RESULT SCREEN
+================================================================ */
+      #s-result {
+        background: var(--bg);
+        overflow-y: auto;
+      }
+      .result-hero {
+        text-align: center;
+        padding: 2.5rem 1rem 1.5rem;
+      }
+      .result-score-ring {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 3px solid var(--border);
+        background: var(--bg2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.25rem;
+        position: relative;
+        animation: pop 0.4s ease;
+      }
+      .result-score-val {
+        font-size: 36px;
+        font-weight: 800;
+        font-family: var(--mono);
+        color: var(--text);
+      }
+      .result-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .result-token {
+        font-size: 12px;
+        color: var(--text2);
+        font-family: var(--mono);
+      }
+      .result-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        max-width: 400px;
+        margin: 1.5rem auto 0;
+      }
+      .result-stat {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1rem;
+        text-align: center;
+      }
+      .result-stat-val {
+        font-size: 26px;
+        font-weight: 800;
+        font-family: var(--mono);
+        line-height: 1;
+      }
+      .result-stat-lbl {
+        font-size: 11px;
+        color: var(--text2);
+        margin-top: 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .review-wrap {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 0 1rem 2rem;
+      }
+      .review-card {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-lg);
+        margin-bottom: 0.75rem;
+        overflow: hidden;
+      }
+      .review-head {
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        border-bottom: 1px solid var(--border);
+      }
+      .review-q-text {
+        font-size: 14px;
+        color: var(--text);
+        line-height: 1.55;
+        flex: 1;
+      }
+      .review-opts {
+        padding: 0.875rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .review-opt {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        color: var(--text2);
+        border: 1px solid transparent;
+      }
+      .review-opt.correct {
+        background: var(--green-light);
+        color: var(--green);
+        border-color: rgba(16, 185, 129, 0.25);
+      }
+      .review-opt.wrong {
+        background: var(--red-light);
+        color: var(--red);
+        border-color: rgba(239, 68, 68, 0.25);
+      }
+      .review-opt-key {
+        width: 22px;
+        height: 22px;
+        border-radius: 5px;
+        background: var(--bg3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+      .review-opt.correct .review-opt-key {
+        background: var(--green);
+        color: #fff;
+      }
+      .review-opt.wrong .review-opt-key {
+        background: var(--red);
+        color: #fff;
+      }
+
+      /* EMPTY STATE */
+      .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+      }
+      .empty-icon {
+        font-size: 36px;
+        margin-bottom: 0.75rem;
+        opacity: 0.4;
+      }
+      .empty-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text2);
+        margin-bottom: 0.5rem;
+      }
+      .empty-sub {
+        font-size: 13px;
+        color: var(--text3);
+      }
+
+      /* MODAL */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 999;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        animation: fadeIn 0.2s ease;
+      }
+      .modal-overlay.on {
+        display: flex;
+      }
+      .modal {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        padding: 2rem;
+        width: 100%;
+        max-width: 420px;
+        animation: fadeUp 0.25s ease;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      }
+      .modal-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+      }
+      .modal-sub {
+        font-size: 13px;
+        color: var(--text2);
+        margin-bottom: 1.5rem;
+        line-height: 1.55;
+      }
+      .modal-btns {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+      }
+
+      /* TOAST */
+      .toast-wrap {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+      }
+      .toast {
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 0.75rem 1.1rem;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: fadeUp 0.25s ease;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        min-width: 200px;
+        max-width: 320px;
+      }
+      .toast.success {
+        border-color: rgba(16, 185, 129, 0.3);
+        background: rgba(16, 185, 129, 0.08);
+      }
+      .toast.error {
+        border-color: rgba(239, 68, 68, 0.3);
+        background: rgba(239, 68, 68, 0.08);
+      }
+      .toast.info {
+        border-color: rgba(59, 130, 246, 0.3);
+        background: rgba(59, 130, 246, 0.08);
+      }
+
+      /* ANSWER ROW */
+      .ans-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+      .ans-row .inp {
+        flex: 1;
+      }
+      .ans-letter {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        background: var(--bg4);
+        border: 1px solid var(--border2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text2);
+        flex-shrink: 0;
+      }
+      .radio-correct {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        flex-shrink: 0;
+        accent-color: var(--green);
+      }
+
+      /* TABS */
+      .tab-bar {
+        display: flex;
+        gap: 2px;
+        background: var(--bg3);
+        border-radius: 10px;
+        padding: 3px;
+        margin-bottom: 1.25rem;
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 7px 12px;
+        border-radius: 7px;
+        border: none;
+        background: transparent;
+        color: var(--text2);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.18s;
+        font-family: var(--sans);
+      }
+      .tab-btn.on {
+        background: var(--bg5);
+        color: var(--text);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      /* REALTIME BADGE */
+      .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 99px;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--green);
+      }
+
+      /* ================================================================
+   RESPONSIVE — MOBILE
+================================================================ */
+      @media (max-width: 768px) {
+        :root {
+          --sidebar: 100%;
+        }
+
+        /* HOME */
+        .home-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .home-title {
+          font-size: 1.75rem;
+        }
+
+        /* ADMIN MOBILE */
+        .mobile-menu-btn {
+          display: flex;
+        }
+        .sidebar {
+          position: fixed;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          z-index: 200;
+          transform: translateX(-100%);
+          width: 280px;
+        }
+        .sidebar.open {
+          transform: translateX(0);
+          box-shadow: 0 0 60px rgba(0, 0, 0, 0.7);
+        }
+        .admin-layout {
+          height: calc(100vh - 57px);
+        }
+        .admin-main {
+          height: 100%;
+          overflow-y: auto;
+        }
+        .admin-page {
+          padding: 1rem;
+        }
+        .stats-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .token-item {
+          flex-wrap: wrap;
+        }
+        .token-actions {
+          width: 100%;
+        }
+        .token-actions .btn {
+          flex: 1;
+        }
+        .gen-form-row {
+          grid-template-columns: 1fr 1fr;
+        }
+        .resp-table {
+          font-size: 12px;
+        }
+        .resp-table th,
+        .resp-table td {
+          padding: 0.6rem 0.75rem;
+        }
+
+        /* UJIAN MOBILE */
+        .ujian-sidebar {
+          display: none;
+          position: fixed;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          z-index: 200;
+          width: 280px;
+          transform: translateX(-100%);
+          transition: transform 0.3s ease;
+        }
+        .ujian-sidebar.open {
+          display: flex;
+          transform: translateX(0);
+          box-shadow: 0 0 60px rgba(0, 0, 0, 0.7);
+        }
+        .ujian-layout {
+          height: calc(100vh - 57px);
+          flex-direction: column;
+        }
+        .ujian-main {
+          flex: 1;
+          overflow-y: auto;
+        }
+        .ujian-q-area {
+          padding: 1rem;
+        }
+        .ujian-nav-toggle {
+          display: flex;
+        }
+        .ujian-nav {
+          gap: 6px;
+        }
+        .ujian-nav-center {
+          gap: 6px;
+        }
+        .btn-sm-mobile .btn-text {
+          display: none;
+        }
+        .timer-display {
+          font-size: 16px;
+        }
+        .ujian-topbar {
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .ujian-top-right {
+          flex: 1;
+          justify-content: flex-end;
+        }
+        .soal-grid {
+          gap: 5px;
+        }
+        .snum {
+          width: 32px;
+          height: 32px;
+          font-size: 11px;
+        }
+
+        /* RESULT MOBILE */
+        .result-stats {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+        }
+        .result-stat-val {
+          font-size: 20px;
+        }
+        .review-wrap {
+          padding: 0 0.75rem 2rem;
+        }
+
+        /* TOPBAR */
+        .topbar {
+          padding: 0.75rem 1rem;
+        }
+        .topbar-title {
+          font-size: 14px;
+        }
+      }
+      @media (max-width: 480px) {
+        .home-grid {
+          grid-template-columns: 1fr;
+        }
+        .home-card {
+          padding: 1.25rem 1rem;
+        }
+        .stats-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .modal {
+          padding: 1.5rem;
+        }
+        .ujian-nav {
+          padding: 0.75rem 1rem;
+        }
+        .login-box {
+          padding: 1.5rem;
+        }
+        .gen-form-row {
+          grid-template-columns: 1fr;
+        }
+        .result-score-val {
+          font-size: 28px;
+        }
+        .result-score-ring {
+          width: 100px;
+          height: 100px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- TOAST CONTAINER -->
+    <div class="toast-wrap" id="toast-wrap"></div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modal">
+      <div class="modal">
+        <div class="modal-title" id="modal-title">Konfirmasi</div>
+        <div class="modal-sub" id="modal-body">Apakah kamu yakin?</div>
+        <div class="modal-btns">
+          <button class="btn" onclick="closeModal()">Batal</button>
+          <button class="btn btn-red" id="modal-confirm-btn" onclick="">
+            Ya, Lanjutkan
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR OVERLAY (admin & ujian) -->
+    <div
+      class="sidebar-overlay"
+      id="sidebar-overlay"
+      onclick="closeSidebar()"
+    ></div>
+
+    <!-- ================================================================
+     HOME
+================================================================ -->
+    <div id="s-home" class="screen on">
+      <div class="orb orb1"></div>
+      <div class="orb orb2"></div>
+      <div class="home-wrap">
+        <div class="home-badge"><span></span> Sistem Ujian Digital</div>
+        <h1 class="home-title">IanTest<br />Platform</h1>
+        <p class="home-sub">
+          Simulasi ujian Test berbasis token dengan dashboard admin realtime dan
+          analitik lengkap.
+        </p>
+        <div class="home-grid">
+          <div class="home-card admin" onclick="goAdminLogin()">
+            <div class="hc-icon">🛡️</div>
+            <div class="hc-label">Panel Admin</div>
+            <div class="hc-desc">Kelola soal, token & pantau peserta</div>
+          </div>
+          <div class="home-card peserta" onclick="goPesertaLogin()">
+            <div class="hc-icon">📝</div>
+            <div class="hc-label">Ruang Peserta</div>
+            <div class="hc-desc">Masuk ujian dengan token</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================
+     ADMIN LOGIN
+================================================================ -->
+    <div id="s-admin-login" class="screen">
+      <div class="login-box">
+        <div class="login-head">
+          <div class="login-icon blue">🛡️</div>
+          <div class="login-title">Login Admin</div>
+          <div class="login-sub">Masukkan kredensial untuk mengakses panel</div>
+        </div>
+        <div class="form-row">
+          <label class="lbl">Username</label>
+          <input
+            class="inp"
+            type="text"
+            id="adm-usr"
+            placeholder="Username"
+            autocomplete="off"
+          />
+        </div>
+        <div class="form-row">
+          <label class="lbl">Password</label>
+          <input
+            class="inp"
+            type="password"
+            id="adm-pwd"
+            placeholder="••••••••"
+            onkeydown="if (event.key === 'Enter') doAdminLogin();"
+          />
+        </div>
+        <div class="err-msg" id="adm-err">Username atau password salah.</div>
+        <button
+          class="btn btn-primary"
+          style="width: 100%; margin-top: 1.25rem; padding: 12px"
+          onclick="doAdminLogin()"
+        >
+          Masuk ke Panel
+        </button>
+        <button
+          class="btn"
+          style="width: 100%; margin-top: 8px"
+          onclick="show('s-home')"
+        >
+          ← Kembali
+        </button>
+      </div>
+    </div>
+
+    <!-- ================================================================
+     ADMIN PANEL
+================================================================ -->
+    <div id="s-admin" class="screen">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <button
+            class="btn btn-icon mobile-menu-btn"
+            onclick="openAdminSidebar()"
+            title="Menu"
+          >
+            ☰
+          </button>
+          <div>
+            <div class="topbar-title">IanTest Admin</div>
+            <div class="topbar-sub" id="adm-topbar-sub">Dashboard</div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="live-badge">
+            <div class="rt-dot"></div>
+            Live
+          </div>
+          <button class="btn btn-sm" onclick="doAdminLogout()">Logout</button>
+        </div>
+      </div>
+
+      <div class="admin-layout">
+        <!-- Sidebar -->
+        <div class="sidebar" id="admin-sidebar">
+          <div class="sidebar-logo">
+            <div class="sidebar-logo-text">IanTest</div>
+            <div class="sidebar-logo-sub">Admin Panel</div>
+          </div>
+          <div class="sidebar-section">Menu</div>
+          <div class="sidebar-menu">
+            <div
+              class="smenu-item active"
+              onclick="admNav('dashboard')"
+              id="smenu-dashboard"
+            >
+              <span class="smenu-icon">📊</span> Dashboard
+            </div>
+            <div class="smenu-item" onclick="admNav('token')" id="smenu-token">
+              <span class="smenu-icon">🎟️</span> Token Ujian
+              <span class="smenu-count" id="sc-token">0</span>
+            </div>
+            <div class="smenu-item" onclick="admNav('soal')" id="smenu-soal">
+              <span class="smenu-icon">📚</span> Bank Soal
+              <span class="smenu-count" id="sc-soal">0</span>
+            </div>
+            <div
+              class="smenu-item"
+              onclick="admNav('tambah')"
+              id="smenu-tambah"
+            >
+              <span class="smenu-icon">✏️</span> Tambah Soal
+            </div>
+          </div>
+          <div class="sidebar-section">Peserta</div>
+          <div class="sidebar-menu">
+            <div
+              class="smenu-item"
+              onclick="admNav('responses')"
+              id="smenu-responses"
+            >
+              <span class="smenu-icon">📈</span> Respons &amp; Nilai
+              <span class="smenu-count" id="sc-resp">0</span>
+            </div>
+            <div class="smenu-item" onclick="admNav('aktif')" id="smenu-aktif">
+              <span class="smenu-icon">🟢</span> Sedang Ujian
+              <span class="smenu-count" id="sc-aktif">0</span>
+            </div>
+          </div>
+          <div class="sidebar-footer">
+            <div class="sidebar-user">
+              <div class="sidebar-user-av">A</div>
+              <div>
+                <div class="sidebar-user-name">Admin</div>
+                <div class="sidebar-user-role">Administrator</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-main" id="admin-main">
+          <!-- DASHBOARD PAGE -->
+          <div class="admin-page on" id="ap-dashboard">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Dashboard</div>
+                <div class="section-sub">
+                  Ringkasan sistem ujian secara realtime
+                </div>
+              </div>
+              <div class="live-badge">
+                <div class="rt-dot"></div>
+                Realtime
+              </div>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-card blue">
+                <div class="stat-label">Total Soal</div>
+                <div class="stat-value" id="ds-soal">0</div>
+                <div class="stat-sub">Dalam bank soal</div>
+              </div>
+              <div class="stat-card green">
+                <div class="stat-label">Token Aktif</div>
+                <div class="stat-value" id="ds-token-aktif">0</div>
+                <div class="stat-sub">Belum digunakan</div>
+              </div>
+              <div class="stat-card warn">
+                <div class="stat-label">Sedang Ujian</div>
+                <div class="stat-value" id="ds-aktif">0</div>
+                <div class="stat-sub">Peserta online</div>
+              </div>
+              <div class="stat-card purple">
+                <div class="stat-label">Selesai Ujian</div>
+                <div class="stat-value" id="ds-selesai">0</div>
+                <div class="stat-sub">Peserta</div>
+              </div>
+              <div class="stat-card blue">
+                <div class="stat-label">Rata-rata Nilai</div>
+                <div class="stat-value" id="ds-avg">—</div>
+                <div class="stat-sub">Dari peserta selesai</div>
+              </div>
+              <div class="stat-card red">
+                <div class="stat-label">Token Terpakai</div>
+                <div class="stat-value" id="ds-token-used">0</div>
+                <div class="stat-sub">Sudah digunakan</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">5 Nilai Terakhir</div>
+              <div id="ds-recent-list">
+                <div class="empty-state" style="padding: 1.5rem">
+                  <div class="empty-icon">📭</div>
+                  <div class="empty-title">Belum ada peserta selesai</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TOKEN PAGE -->
+          <div class="admin-page" id="ap-token">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Token Ujian</div>
+                <div class="section-sub">
+                  Generate dan kelola token akses peserta
+                </div>
+              </div>
+            </div>
+            <div class="gen-form">
+              <div class="card-title" style="margin-bottom: 0.875rem">
+                Generate Token Baru
+              </div>
+              <div class="gen-form-row">
+                <div class="form-row" style="margin: 0">
+                  <label class="lbl">Jumlah Token</label>
+                  <input
+                    class="inp"
+                    type="number"
+                    id="tok-n"
+                    value="5"
+                    min="1"
+                    max="100"
+                    placeholder="5"
+                  />
+                </div>
+                <div class="form-row" style="margin: 0">
+                  <label class="lbl">Durasi (menit)</label>
+                  <input
+                    class="inp"
+                    type="number"
+                    id="tok-dur"
+                    value="90"
+                    min="5"
+                    max="300"
+                    placeholder="90"
+                  />
+                </div>
+                <div class="form-row" style="margin: 0">
+                  <label class="lbl">Nama Sesi</label>
+                  <input
+                    class="inp"
+                    type="text"
+                    id="tok-sesi"
+                    placeholder="cth: Test Sesi 1"
+                  />
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="genTokens()">
+                🎟️ Generate Token
+              </button>
+            </div>
+            <div class="section-header">
+              <div class="section-title">
+                Daftar Token
+                <span
+                  id="tok-count-label"
+                  class="badge badge-blue"
+                  style="margin-left: 6px"
+                  >0</span
+                >
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button
+                  class="btn btn-sm"
+                  onclick="filterTokens('all')"
+                  id="filt-all"
+                >
+                  Semua
+                </button>
+                <button
+                  class="btn btn-sm"
+                  onclick="filterTokens('aktif')"
+                  id="filt-aktif"
+                >
+                  Tersedia
+                </button>
+                <button
+                  class="btn btn-sm"
+                  onclick="filterTokens('used')"
+                  id="filt-used"
+                >
+                  Terpakai
+                </button>
+                <button class="btn btn-sm btn-red" onclick="clearAllTokens()">
+                  Hapus Semua
+                </button>
+              </div>
+            </div>
+            <div class="token-grid" id="token-list">
+              <div class="empty-state">
+                <div class="empty-icon">🎟️</div>
+                <div class="empty-title">Belum ada token</div>
+                <div class="empty-sub">Generate token di atas</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BANK SOAL PAGE -->
+          <div class="admin-page" id="ap-soal">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Bank Soal</div>
+                <div class="section-sub" id="soal-count-sub">
+                  0 soal tersimpan
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <input
+                  class="inp"
+                  type="text"
+                  placeholder="Cari soal..."
+                  style="width: 180px"
+                  oninput="filterSoal(this.value)"
+                />
+                <button class="btn btn-sm btn-red" onclick="clearAllSoal()">
+                  Hapus Semua
+                </button>
+              </div>
+            </div>
+            <div class="soal-list" id="soal-list">
+              <div class="empty-state">
+                <div class="empty-icon">📚</div>
+                <div class="empty-title">Belum ada soal</div>
+                <div class="empty-sub">Tambahkan soal di menu Tambah Soal</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAMBAH SOAL PAGE -->
+          <div class="admin-page" id="ap-tambah">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Tambah Soal</div>
+                <div class="section-sub">Buat soal baru untuk bank soal</div>
+              </div>
+            </div>
+            <div class="card" style="max-width: 680px">
+              <div class="form-row">
+                <label class="lbl">Teks Pertanyaan</label>
+                <textarea
+                  class="inp"
+                  id="inp-q"
+                  placeholder="Tulis pertanyaan di sini..."
+                ></textarea>
+              </div>
+              <div class="form-row">
+                <label class="lbl">Subtes / Kategori</label>
+                <input
+                  class="inp"
+                  type="text"
+                  id="inp-cat"
+                  placeholder="cth: Literasi Bahasa, Penalaran Matematika..."
+                  list="cat-dl"
+                />
+                <datalist id="cat-dl"></datalist>
+              </div>
+              <div class="form-row">
+                <label class="lbl"
+                  >Pilihan Jawaban
+                  <span style="color: var(--text3); font-weight: 400"
+                    >(● = jawaban benar)</span
+                  ></label
+                >
+                <div id="opts-in"></div>
+                <button
+                  class="btn btn-sm"
+                  onclick="addOpt()"
+                  style="margin-top: 8px"
+                >
+                  + Tambah Pilihan
+                </button>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button class="btn btn-primary" onclick="saveQ()">
+                  💾 Simpan Soal
+                </button>
+                <button class="btn" onclick="resetQ()">Reset Form</button>
+              </div>
+              <div
+                id="q-msg"
+                style="margin-top: 10px; font-size: 13px; display: none"
+              ></div>
+            </div>
+          </div>
+
+          <!-- RESPONSES PAGE -->
+          <div class="admin-page" id="ap-responses">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Respons &amp; Nilai Peserta</div>
+                <div class="section-sub">
+                  Data lengkap hasil ujian semua peserta
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center">
+                <div class="live-badge">
+                  <div class="rt-dot"></div>
+                  Live
+                </div>
+                <button
+                  class="btn btn-sm btn-red"
+                  onclick="clearAllResponses()"
+                >
+                  Hapus Data
+                </button>
+              </div>
+            </div>
+            <div class="resp-table-wrap">
+              <table class="resp-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nama Peserta</th>
+                    <th>Token</th>
+                    <th>Sesi</th>
+                    <th>Nilai</th>
+                    <th>Benar</th>
+                    <th>Salah</th>
+                    <th>Skip</th>
+                    <th>Durasi</th>
+                    <th>Selesai</th>
+                  </tr>
+                </thead>
+                <tbody id="resp-tbody">
+                  <tr>
+                    <td
+                      colspan="10"
+                      style="
+                        text-align: center;
+                        padding: 2rem;
+                        color: var(--text3);
+                      "
+                    >
+                      Belum ada data peserta
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- AKTIF PAGE -->
+          <div class="admin-page" id="ap-aktif">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Peserta Sedang Ujian</div>
+                <div class="section-sub">Dipantau secara realtime</div>
+              </div>
+              <div class="live-badge">
+                <div class="rt-dot"></div>
+                Live
+              </div>
+            </div>
+            <div id="aktif-list">
+              <div class="empty-state">
+                <div class="empty-icon">🟢</div>
+                <div class="empty-title">Tidak ada peserta aktif</div>
+                <div class="empty-sub">
+                  Peserta yang sedang mengerjakan ujian akan tampil di sini
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end admin-main -->
+      </div>
+      <!-- end admin-layout -->
+    </div>
+    <!-- end s-admin -->
+
+    <!-- ================================================================
+     PESERTA LOGIN
+================================================================ -->
+    <div id="s-peserta-login" class="screen">
+      <div class="login-box" style="border-color: rgba(16, 185, 129, 0.15)">
+        <div class="login-head">
+          <div class="login-icon green">📝</div>
+          <div class="login-title">Masuk Ujian</div>
+          <div class="login-sub">
+            Masukkan nama dan token yang diberikan pengawas
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="lbl">Nama Lengkap</label>
+          <input
+            class="inp"
+            type="text"
+            id="inp-nama"
+            placeholder="Nama peserta"
+          />
+        </div>
+        <div class="form-row">
+          <label class="lbl">Token Ujian</label>
+          <input
+            class="inp"
+            type="text"
+            id="inp-token"
+            placeholder="Test-XXXXXX"
+            style="
+              font-family: var(--mono);
+              letter-spacing: 2px;
+              text-transform: uppercase;
+            "
+            oninput="this.value = this.value.toUpperCase()"
+            onkeydown="if (event.key === 'Enter') doLogin();"
+          />
+        </div>
+        <div class="err-msg" id="login-err">
+          Token tidak valid, sudah digunakan, atau belum ada soal.
+        </div>
+        <button
+          class="btn btn-green"
+          style="width: 100%; margin-top: 1.25rem; padding: 12px"
+          onclick="doLogin()"
+        >
+          Mulai Ujian →
+        </button>
+        <button
+          class="btn"
+          style="width: 100%; margin-top: 8px"
+          onclick="show('s-home')"
+        >
+          ← Kembali
+        </button>
+      </div>
+    </div>
+
+    <!-- ================================================================
+     UJIAN
+================================================================ -->
+    <div id="s-ujian" class="screen">
+      <!-- Topbar -->
+      <div class="ujian-topbar">
+        <div class="ujian-top-left">
+          <button
+            class="btn btn-icon ujian-nav-toggle"
+            onclick="openUjianSidebar()"
+            title="Nomor Soal"
+          >
+            ☰
+          </button>
+          <div>
+            <div class="topbar-title" id="ujian-sesi-title">Ujian</div>
+            <div class="topbar-sub" id="ujian-peserta-sub">Peserta</div>
+          </div>
+        </div>
+        <div class="ujian-top-right">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              flex-direction: column;
+              align-items: flex-end;
+            "
+          >
+            <div class="timer-display" id="timer-disp">90:00</div>
+            <div class="timer-bar-outer" style="width: 120px">
+              <div
+                class="timer-bar-inner"
+                id="timer-bar"
+                style="width: 100%"
+              ></div>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-red" onclick="confirmFinish()">
+            Kumpulkan
+          </button>
+        </div>
+      </div>
+
+      <div class="ujian-layout">
+        <!-- Nomor Soal Sidebar -->
+        <div class="ujian-sidebar" id="ujian-sidebar">
+          <div class="ujian-sidebar-head">
+            <div class="ujian-sidebar-title">Nomor Soal</div>
+            <div class="legend">
+              <div class="leg-item">
+                <div class="leg-dot answered"></div>
+                Dijawab
+              </div>
+              <div class="leg-item">
+                <div class="leg-dot ragu"></div>
+                Ragu-ragu
+              </div>
+              <div class="leg-item">
+                <div class="leg-dot empty"></div>
+                Belum
+              </div>
+            </div>
+          </div>
+          <div class="soal-grid" id="soal-nav-grid"></div>
+        </div>
+
+        <!-- Main Ujian -->
+        <div class="ujian-main">
+          <div class="ujian-q-area">
+            <div class="ujian-q-meta">
+              <div>
+                <span class="ujian-q-num" id="q-num-label">Soal 1 dari 0</span>
+                <span
+                  class="badge badge-blue"
+                  id="q-cat-badge"
+                  style="margin-left: 8px"
+                ></span>
+              </div>
+              <div class="progress-info" id="q-progress-info">0 dijawab</div>
+            </div>
+            <div class="ujian-q-text" id="q-text">Memuat soal...</div>
+            <div class="ujian-opts" id="ujian-opts"></div>
+          </div>
+
+          <!-- Nav Bottom -->
+          <div class="ujian-nav">
+            <button class="btn" id="btn-prev" onclick="prevQ()">
+              ← Sebelumnya
+            </button>
+            <div class="ujian-nav-center">
+              <button class="btn btn-warn" onclick="markRagu()" id="btn-ragu">
+                ⚠️ Ragu-ragu
+              </button>
+              <button
+                class="btn"
+                onclick="clearRagu()"
+                id="btn-clear-ragu"
+                style="display: none"
+              >
+                ✕ Hapus Ragu
+              </button>
+            </div>
+            <button class="btn btn-primary" id="btn-next" onclick="nextQ()">
+              Berikutnya →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================
+     RESULT
+================================================================ -->
+    <div id="s-result" class="screen">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div>
+            <div class="topbar-title">Hasil Ujian</div>
+            <div class="topbar-sub">Ujian telah selesai</div>
+          </div>
+        </div>
+        <button class="btn" onclick="show('s-home')">Selesai</button>
+      </div>
+
+      <div class="result-hero">
+        <div class="result-score-ring">
+          <div class="result-score-val" id="res-score">0</div>
+        </div>
+        <div class="result-name" id="res-name">Peserta</div>
+        <div class="result-token" id="res-token-disp">TOKEN</div>
+        <div class="result-stats">
+          <div class="result-stat">
+            <div
+              class="result-stat-val"
+              id="r-benar"
+              style="color: var(--green)"
+            >
+              0
+            </div>
+            <div class="result-stat-lbl">Benar</div>
+          </div>
+          <div class="result-stat">
+            <div class="result-stat-val" id="r-salah" style="color: var(--red)">
+              0
+            </div>
+            <div class="result-stat-lbl">Salah</div>
+          </div>
+          <div class="result-stat">
+            <div
+              class="result-stat-val"
+              id="r-skip"
+              style="color: var(--text2)"
+            >
+              0
+            </div>
+            <div class="result-stat-lbl">Dilewati</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="review-wrap">
+        <div
+          style="
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1rem;
+            padding: 0 0.25rem;
+          "
+        >
+          📋 Pembahasan Jawaban
+        </div>
+        <div id="review-body"></div>
+      </div>
+    </div>
+
+    <script>
+      // ================================================================
+      // DATABASE (localStorage JSON)
+      // ================================================================
+      const ADMIN_USR = "admin";
+      const ADMIN_PWD = "sitepu2209";
+      const DB_KEY_Q = "IanTest_questions";
+      const DB_KEY_T = "IanTest_tokens";
+      const DB_KEY_R = "IanTest_responses";
+      const DB_KEY_A = "IanTest_aktif";
+
+      function dbGet(key, def = []) {
+        try {
+          return JSON.parse(localStorage.getItem(key)) || def;
+        } catch (e) {
+          return def;
+        }
+      }
+      function dbSet(key, val) {
+        try {
+          localStorage.setItem(key, JSON.stringify(val));
+        } catch (e) {}
+      }
+
+      function getQ() {
+        return dbGet(DB_KEY_Q, []);
+      }
+      function getT() {
+        return dbGet(DB_KEY_T, []);
+      }
+      function getR() {
+        return dbGet(DB_KEY_R, []);
+      }
+      function getA() {
+        return dbGet(DB_KEY_A, []);
+      }
+      function setQ(v) {
+        dbSet(DB_KEY_Q, v);
+      }
+      function setT(v) {
+        dbSet(DB_KEY_T, v);
+      }
+      function setR(v) {
+        dbSet(DB_KEY_R, v);
+      }
+      function setA(v) {
+        dbSet(DB_KEY_A, v);
+      }
+
+      // ================================================================
+      // UTILS
+      // ================================================================
+      let optIdx = 0;
+      let ujianState = null;
+      let timerInt = null;
+      let adminRefreshInt = null;
+      let _toastTimer = {};
+
+      function show(id) {
+        document
+          .querySelectorAll(".screen")
+          .forEach((s) => s.classList.remove("on"));
+        document.getElementById(id).classList.add("on");
+        closeSidebar();
+      }
+
+      function toast(msg, type = "info", duration = 3000) {
+        const wrap = document.getElementById("toast-wrap");
+        const el = document.createElement("div");
+        el.className = `toast ${type}`;
+        const icon = type === "success" ? "✓" : type === "error" ? "✕" : "ℹ";
+        el.innerHTML = `<span style="font-weight:700;color:${type === "success" ? "var(--green)" : type === "error" ? "var(--red)" : "var(--accent)"}">${icon}</span> ${msg}`;
+        wrap.appendChild(el);
+        setTimeout(() => el.remove(), duration);
+      }
+
+      function openModal(title, body, onConfirm, danger = true) {
+        document.getElementById("modal-title").textContent = title;
+        document.getElementById("modal-body").textContent = body;
+        const btn = document.getElementById("modal-confirm-btn");
+        btn.className = `btn ${danger ? "btn-red" : "btn-primary"}`;
+        btn.onclick = () => {
+          closeModal();
+          onConfirm();
+        };
+        document.getElementById("modal").classList.add("on");
+      }
+      function closeModal() {
+        document.getElementById("modal").classList.remove("on");
+      }
+
+      function openAdminSidebar() {
+        document.getElementById("admin-sidebar").classList.add("open");
+        document.getElementById("sidebar-overlay").classList.add("on");
+      }
+      function openUjianSidebar() {
+        document.getElementById("ujian-sidebar").classList.add("open");
+        document.getElementById("sidebar-overlay").classList.add("on");
+      }
+      function closeSidebar() {
+        document.getElementById("admin-sidebar")?.classList.remove("open");
+        document.getElementById("ujian-sidebar")?.classList.remove("open");
+        document.getElementById("sidebar-overlay").classList.remove("on");
+      }
+
+      function genTokenCode() {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let k = "";
+        for (let i = 0; i < 6; i++)
+          k += chars[Math.floor(Math.random() * chars.length)];
+        return "Test-" + k;
+      }
+
+      function fmtTime(sec) {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+      }
+
+      function fmtDate(ts) {
+        if (!ts) return "—";
+        return new Date(ts).toLocaleString("id-ID", {
+          day: "2-digit",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      // ================================================================
+      // HOME
+      // ================================================================
+      function goAdminLogin() {
+        document.getElementById("adm-usr").value = "";
+        document.getElementById("adm-pwd").value = "";
+        document.getElementById("adm-err").style.display = "none";
+        show("s-admin-login");
+        setTimeout(() => document.getElementById("adm-usr").focus(), 200);
+      }
+      function goPesertaLogin() {
+        document.getElementById("inp-nama").value = "";
+        document.getElementById("inp-token").value = "";
+        document.getElementById("login-err").style.display = "none";
+        show("s-peserta-login");
+      }
+
+      // ================================================================
+      // ADMIN AUTH
+      // ================================================================
+      function doAdminLogin() {
+        const u = document.getElementById("adm-usr").value.trim();
+        const p = document.getElementById("adm-pwd").value;
+        if (u === ADMIN_USR && p === ADMIN_PWD) {
+          document.getElementById("adm-err").style.display = "none";
+          show("s-admin");
+          startAdminRefresh();
+          admNav("dashboard");
+          toast("Selamat datang, Admin!", "success");
+        } else {
+          document.getElementById("adm-err").style.display = "block";
+          document.getElementById("adm-pwd").value = "";
+          document.getElementById("adm-pwd").focus();
+        }
+      }
+      function doAdminLogout() {
+        stopAdminRefresh();
+        show("s-home");
+      }
+
+      // ================================================================
+      // ADMIN NAVIGATION
+      // ================================================================
+      function admNav(page) {
+        document
+          .querySelectorAll(".smenu-item")
+          .forEach((el) => el.classList.remove("active"));
+        document.getElementById("smenu-" + page).classList.add("active");
+        document
+          .querySelectorAll(".admin-page")
+          .forEach((el) => el.classList.remove("on"));
+        document.getElementById("ap-" + page).classList.add("on");
+        document.getElementById("adm-topbar-sub").textContent =
+          {
+            dashboard: "Dashboard",
+            token: "Token Ujian",
+            soal: "Bank Soal",
+            tambah: "Tambah Soal",
+            responses: "Respons Peserta",
+            aktif: "Peserta Aktif",
+          }[page] || page;
+        refreshAdminPage(page);
+        closeSidebar();
+      }
+
+      function refreshAdminPage(page) {
+        if (page === "dashboard") renderDashboard();
+        else if (page === "token") renderTokenList();
+        else if (page === "soal") renderSoalList();
+        else if (page === "tambah") refreshCatDl();
+        else if (page === "responses") renderResponses();
+        else if (page === "aktif") renderAktif();
+        updateSidebarCounts();
+      }
+
+      function startAdminRefresh() {
+        stopAdminRefresh();
+        adminRefreshInt = setInterval(() => {
+          const activePage = document
+            .querySelector(".admin-page.on")
+            ?.id?.replace("ap-", "");
+          if (activePage) refreshAdminPage(activePage);
+        }, 3000);
+      }
+      function stopAdminRefresh() {
+        if (adminRefreshInt) {
+          clearInterval(adminRefreshInt);
+          adminRefreshInt = null;
+        }
+      }
+
+      function updateSidebarCounts() {
+        const q = getQ();
+        const t = getT();
+        const r = getR();
+        const a = getA();
+        document.getElementById("sc-soal").textContent = q.length;
+        document.getElementById("sc-token").textContent = t.length;
+        document.getElementById("sc-resp").textContent = r.length;
+        document.getElementById("sc-aktif").textContent = a.length;
+      }
+
+      // ================================================================
+      // DASHBOARD
+      // ================================================================
+      function renderDashboard() {
+        const q = getQ(),
+          t = getT(),
+          r = getR(),
+          a = getA();
+        const tokAktif = t.filter((x) => !x.used).length;
+        const tokUsed = t.filter((x) => x.used).length;
+        const avg = r.length
+          ? Math.round(r.reduce((s, x) => s + x.nilai, 0) / r.length)
+          : null;
+
+        document.getElementById("ds-soal").textContent = q.length;
+        document.getElementById("ds-token-aktif").textContent = tokAktif;
+        document.getElementById("ds-aktif").textContent = a.length;
+        document.getElementById("ds-selesai").textContent = r.length;
+        document.getElementById("ds-avg").textContent =
+          avg !== null ? avg : "—";
+        document.getElementById("ds-token-used").textContent = tokUsed;
+        updateSidebarCounts();
+
+        // Recent
+        const recentEl = document.getElementById("ds-recent-list");
+        const recent = [...r].reverse().slice(0, 5);
+        if (!recent.length) {
+          recentEl.innerHTML =
+            '<div class="empty-state" style="padding:1.5rem"><div class="empty-icon">📭</div><div class="empty-title">Belum ada peserta selesai</div></div>';
+          return;
+        }
+        recentEl.innerHTML = recent
+          .map(
+            (x) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:.75rem 0;border-bottom:1px solid var(--border)">
+      <div style="width:36px;height:36px;border-radius:9px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0">${x.nilai}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.nama}</div>
+        <div style="font-size:11px;color:var(--text2)">${x.token} · ${fmtDate(x.selesaiAt)}</div>
+      </div>
+      <span class="badge ${x.nilai >= 70 ? "badge-green" : x.nilai >= 50 ? "badge-warn" : "badge-red"}">${x.nilai}</span>
+    </div>`,
+          )
+          .join("");
+      }
+
+      // ================================================================
+      // TOKEN
+      // ================================================================
+      let tokFilter = "all";
+      function filterTokens(f) {
+        tokFilter = f;
+        ["all", "aktif", "used"].forEach((k) => {
+          const el = document.getElementById("filt-" + k);
+          if (el) el.style.background = k === f ? "var(--accent)" : "";
+          if (el) el.style.color = k === f ? "#fff" : "";
+          if (el) el.style.borderColor = k === f ? "var(--accent)" : "";
+        });
+        renderTokenList();
+      }
+
+      function genTokens() {
+        const n = Math.min(
+          100,
+          Math.max(1, parseInt(document.getElementById("tok-n").value) || 5),
+        );
+        const dur = Math.min(
+          300,
+          Math.max(5, parseInt(document.getElementById("tok-dur").value) || 90),
+        );
+        const sesi =
+          document.getElementById("tok-sesi").value.trim() || "Ujian Test";
+        let tokens = getT();
+        const existing = new Set(tokens.map((t) => t.code));
+        for (let i = 0; i < n; i++) {
+          let code = genTokenCode();
+          while (existing.has(code)) code = genTokenCode();
+          existing.add(code);
+          tokens.push({
+            code,
+            dur,
+            sesi,
+            used: false,
+            usedBy: "",
+            usedAt: null,
+            createdAt: Date.now(),
+          });
+        }
+        setT(tokens);
+        renderTokenList();
+        updateSidebarCounts();
+        toast(`${n} token berhasil digenerate!`, "success");
+      }
+
+      function renderTokenList() {
+        const tokens = getT();
+        const filtered =
+          tokFilter === "aktif"
+            ? tokens.filter((t) => !t.used)
+            : tokFilter === "used"
+              ? tokens.filter((t) => t.used)
+              : tokens;
+        document.getElementById("tok-count-label").textContent =
+          filtered.length;
+        const el = document.getElementById("token-list");
+        if (!filtered.length) {
+          el.innerHTML =
+            '<div class="empty-state"><div class="empty-icon">🎟️</div><div class="empty-title">Tidak ada token</div></div>';
+          return;
+        }
+        el.innerHTML = [...filtered]
+          .reverse()
+          .map((t) => {
+            const origIdx = tokens.findIndex((x) => x.code === t.code);
+            return `<div class="token-item">
+      <div class="token-code">${t.code}</div>
+      <div class="token-info">
+        <div class="token-session">${t.sesi}</div>
+        <div class="token-meta">${t.dur} menit · Dibuat ${fmtDate(t.createdAt)}${t.used ? ` · Dipakai: ${t.usedBy} (${fmtDate(t.usedAt)})` : ""}  </div>
+      </div>
+      <div class="token-actions">
+        <span class="badge ${t.used ? "badge-red" : "badge-green"}">${t.used ? "Terpakai" : "Tersedia"}</span>
+        <button class="btn btn-sm btn-red" onclick="delToken(${origIdx})">Hapus</button>
+      </div>
+    </div>`;
+          })
+          .join("");
+      }
+
+      function delToken(i) {
+        openModal(
+          "Hapus Token",
+          "Hapus token ini? Tindakan tidak bisa dibatalkan.",
+          () => {
+            const t = getT();
+            t.splice(i, 1);
+            setT(t);
+            renderTokenList();
+            updateSidebarCounts();
+            toast("Token dihapus.", "info");
+          },
+        );
+      }
+      function clearAllTokens() {
+        openModal(
+          "Hapus Semua Token",
+          "Hapus semua token? Data tidak bisa dikembalikan.",
+          () => {
+            setT([]);
+            renderTokenList();
+            updateSidebarCounts();
+            toast("Semua token dihapus.", "info");
+          },
+        );
+      }
+
+      // ================================================================
+      // SOAL
+      // ================================================================
+      function refreshCatDl() {
+        const cats = [
+          ...new Set(
+            getQ()
+              .map((q) => q.cat)
+              .filter(Boolean),
+          ),
+        ];
+        const dl = document.getElementById("cat-dl");
+        if (dl)
+          dl.innerHTML = cats.map((c) => `<option value="${c}">`).join("");
+      }
+
+      function addOpt() {
+        const c = document.getElementById("opts-in");
+        const i = optIdx++;
+        const n = c.children.length;
+        const d = document.createElement("div");
+        d.className = "ans-row";
+        d.id = "or-" + i;
+        d.innerHTML = `<div class="ans-letter">${String.fromCharCode(65 + n)}</div>
+    <input class="inp" type="text" id="ov-${i}" placeholder="Pilihan ${String.fromCharCode(65 + n)}">
+    <input type="radio" name="correct" value="${i}" class="radio-correct" title="Jawaban benar">`;
+        c.appendChild(d);
+      }
+      function relabelOpts() {
+        document.querySelectorAll("#opts-in .ans-row").forEach((r, i) => {
+          r.querySelector(".ans-letter").textContent = String.fromCharCode(
+            65 + i,
+          );
+          r.querySelector("input[type=text]").placeholder =
+            "Pilihan " + String.fromCharCode(65 + i);
+        });
+      }
+
+      function resetQ() {
+        document.getElementById("inp-q").value = "";
+        document.getElementById("inp-cat").value = "";
+        document.getElementById("opts-in").innerHTML = "";
+        optIdx = 0;
+        document.getElementById("q-msg").style.display = "none";
+        addOpt();
+        addOpt();
+        addOpt();
+        addOpt();
+      }
+
+      function saveQ() {
+        const text = document.getElementById("inp-q").value.trim();
+        const cat = document.getElementById("inp-cat").value.trim();
+        const msg = document.getElementById("q-msg");
+        if (!text) {
+          msg.textContent = "Pertanyaan tidak boleh kosong.";
+          msg.style.cssText = "display:block;color:var(--red)";
+          return;
+        }
+        const rows = document.querySelectorAll("#opts-in .ans-row");
+        const opts = [];
+        let ans = -1;
+        rows.forEach((r, i) => {
+          const v = r.querySelector("input[type=text]").value.trim();
+          if (v) opts.push(v);
+          const rad = r.querySelector("input[type=radio]");
+          if (rad && rad.checked) ans = opts.length - 1;
+        });
+        if (opts.length < 2) {
+          msg.textContent = "Minimal 2 pilihan jawaban.";
+          msg.style.cssText = "display:block;color:var(--red)";
+          return;
+        }
+        if (ans < 0) {
+          msg.textContent = "Centang salah satu jawaban benar.";
+          msg.style.cssText = "display:block;color:var(--red)";
+          return;
+        }
+        const q = getQ();
+        q.push({
+          id: Date.now(),
+          text,
+          cat,
+          options: opts,
+          answer: ans,
+          createdAt: Date.now(),
+        });
+        setQ(q);
+        refreshCatDl();
+        updateSidebarCounts();
+        msg.textContent = "✓ Soal berhasil disimpan!";
+        msg.style.cssText = "display:block;color:var(--green)";
+        toast("Soal disimpan!", "success");
+        setTimeout(() => {
+          msg.style.display = "none";
+          resetQ();
+        }, 1500);
+      }
+
+      let soalFilterQuery = "";
+      function filterSoal(q) {
+        soalFilterQuery = q.toLowerCase();
+        renderSoalList();
+      }
+
+      function renderSoalList() {
+        const qs = getQ();
+        const filtered = soalFilterQuery
+          ? qs.filter(
+              (q) =>
+                q.text.toLowerCase().includes(soalFilterQuery) ||
+                (q.cat || "").toLowerCase().includes(soalFilterQuery),
+            )
+          : qs;
+        document.getElementById("soal-count-sub").textContent =
+          `${filtered.length} soal ditampilkan${soalFilterQuery ? " (filter aktif)" : ""}`;
+        const el = document.getElementById("soal-list");
+        if (!filtered.length) {
+          el.innerHTML =
+            '<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-title">Tidak ada soal</div></div>';
+          return;
+        }
+        el.innerHTML = filtered
+          .map((q, fi) => {
+            const origIdx = qs.indexOf(q);
+            return `<div class="soal-item" style="animation:fadeUp .2s ease ${fi * 0.03}s both">
+      <div class="soal-num">Soal ${origIdx + 1} · ${fmtDate(q.createdAt)}</div>
+      <div class="soal-text">${q.text}</div>
+      <div class="soal-opts">
+        ${q.options.map((op, oi) => `<span class="soal-opt${oi === q.answer ? " correct" : ""}">${String.fromCharCode(65 + oi)}. ${op}</span>`).join("")}
+      </div>
+      <div class="soal-footer">
+        ${q.cat ? `<span class="badge badge-blue">${q.cat}</span>` : "<span></span>"}
+        <button class="btn btn-sm btn-red" onclick="delSoal(${origIdx})">Hapus</button>
+      </div>
+    </div>`;
+          })
+          .join("");
+      }
+
+      function delSoal(i) {
+        openModal("Hapus Soal", "Hapus soal ini dari bank soal?", () => {
+          const q = getQ();
+          q.splice(i, 1);
+          setQ(q);
+          renderSoalList();
+          updateSidebarCounts();
+          toast("Soal dihapus.", "info");
+        });
+      }
+      function clearAllSoal() {
+        openModal(
+          "Hapus Semua Soal",
+          "Hapus semua soal? Data tidak bisa dikembalikan.",
+          () => {
+            setQ([]);
+            renderSoalList();
+            updateSidebarCounts();
+            toast("Semua soal dihapus.", "info");
+          },
+        );
+      }
+
+      // ================================================================
+      // RESPONSES
+      // ================================================================
+      function renderResponses() {
+        const r = getR();
+        const tbody = document.getElementById("resp-tbody");
+        if (!r.length) {
+          tbody.innerHTML =
+            '<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text3)">Belum ada data peserta</td></tr>';
+          return;
+        }
+        tbody.innerHTML = [...r]
+          .reverse()
+          .map(
+            (x, i) => `
+    <tr>
+      <td class="mono">${r.length - i}</td>
+      <td><span style="font-weight:600;color:var(--text)">${x.nama}</span></td>
+      <td class="mono">${x.token}</td>
+      <td>${x.sesi}</td>
+      <td><span class="badge ${x.nilai >= 70 ? "badge-green" : x.nilai >= 50 ? "badge-warn" : "badge-red"}">${x.nilai}</span></td>
+      <td style="color:var(--green);font-weight:600">${x.benar}</td>
+      <td style="color:var(--red)">${x.salah}</td>
+      <td style="color:var(--text2)">${x.skip}</td>
+      <td class="mono">${x.durasiMenit}m</td>
+      <td class="mono" style="font-size:11px">${fmtDate(x.selesaiAt)}</td>
+    </tr>`,
+          )
+          .join("");
+      }
+
+      function clearAllResponses() {
+        openModal(
+          "Hapus Data Respons",
+          "Hapus semua data hasil ujian peserta?",
+          () => {
+            setR([]);
+            renderResponses();
+            renderDashboard();
+            toast("Data respons dihapus.", "info");
+          },
+        );
+      }
+
+      // ================================================================
+      // AKTIF
+      // ================================================================
+      function renderAktif() {
+        const a = getA();
+        const el = document.getElementById("aktif-list");
+        // Clean stale (>8 jam)
+        const cleaned = a.filter(
+          (x) => Date.now() - x.startAt < 8 * 60 * 60 * 1000,
+        );
+        if (cleaned.length !== a.length) setA(cleaned);
+        if (!cleaned.length) {
+          el.innerHTML =
+            '<div class="empty-state"><div class="empty-icon">🟢</div><div class="empty-title">Tidak ada peserta aktif</div><div class="empty-sub">Peserta yang sedang mengerjakan ujian akan tampil di sini</div></div>';
+          return;
+        }
+        el.innerHTML = cleaned
+          .map((x) => {
+            const elapsed = Math.floor((Date.now() - x.startAt) / 1000);
+            const sisa = Math.max(0, x.durSec - elapsed);
+            return `<div class="token-item">
+      <div style="width:38px;height:38px;border-radius:9px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📝</div>
+      <div class="token-info">
+        <div class="token-session">${x.nama}</div>
+        <div class="token-meta">Token: ${x.token} · Sesi: ${x.sesi} · Mulai: ${fmtDate(x.startAt)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:var(--mono);font-size:14px;font-weight:600;color:${sisa < 300 ? "var(--red)" : sisa < 600 ? "var(--warn)" : "var(--green)"}">${fmtTime(sisa)}</div>
+        <div style="font-size:11px;color:var(--text2)">Sisa waktu</div>
+      </div>
+    </div>`;
+          })
+          .join("");
+      }
+
+      // ================================================================
+      // PESERTA LOGIN & UJIAN
+      // ================================================================
+      function doLogin() {
+        const nama = document.getElementById("inp-nama").value.trim();
+        const code = document
+          .getElementById("inp-token")
+          .value.trim()
+          .toUpperCase();
+        const errEl = document.getElementById("login-err");
+        if (!nama) {
+          toast("Nama tidak boleh kosong.", "error");
+          return;
+        }
+        const tokens = getT();
+        const ti = tokens.findIndex((t) => t.code === code);
+        if (ti < 0 || tokens[ti].used) {
+          errEl.style.display = "block";
+          return;
+        }
+        const q = getQ();
+        if (!q.length) {
+          errEl.style.display = "block";
+          errEl.textContent = "Belum ada soal. Hubungi pengawas.";
+          return;
+        }
+        errEl.style.display = "none";
+        tokens[ti].used = true;
+        tokens[ti].usedBy = nama;
+        tokens[ti].usedAt = Date.now();
+        setT(tokens);
+        // Register as aktif
+        const aktif = getA();
+        aktif.push({
+          nama,
+          token: code,
+          sesi: tokens[ti].sesi,
+          startAt: Date.now(),
+          durSec: tokens[ti].dur * 60,
+        });
+        setA(aktif);
+        startUjian(nama, tokens[ti]);
+      }
+
+      function startUjian(nama, tok) {
+        clearTimer();
+        const pool = [...getQ()].sort(() => Math.random() - 0.5);
+        ujianState = {
+          nama,
+          tok,
+          pool,
+          cur: 0,
+          answers: Array(pool.length).fill(-1),
+          ragu: new Array(pool.length).fill(false),
+          secLeft: tok.dur * 60,
+          totalSec: tok.dur * 60,
+          startAt: Date.now(),
+        };
+        document.getElementById("ujian-sesi-title").textContent = tok.sesi;
+        document.getElementById("ujian-peserta-sub").textContent =
+          nama + " · " + tok.code;
+        show("s-ujian");
+        renderUjianQ();
+        startTimer();
+      }
+
+      function renderUjianQ() {
+        const { pool, cur, answers, ragu } = ujianState;
+        const q = pool[cur];
+
+        // Update meta
+        document.getElementById("q-num-label").textContent =
+          `Soal ${cur + 1} dari ${pool.length}`;
+        document.getElementById("q-cat-badge").textContent = q.cat || "Umum";
+        const answered = answers.filter((a) => a !== -1).length;
+        document.getElementById("q-progress-info").textContent =
+          `${answered} dijawab · ${ragu.filter(Boolean).length} ragu`;
+
+        // Question text
+        document.getElementById("q-text").textContent = q.text;
+
+        // Options
+        const optsEl = document.getElementById("ujian-opts");
+        optsEl.innerHTML = q.options
+          .map(
+            (op, oi) => `
+    <div class="opt${answers[cur] === oi ? " selected" : ""}" onclick="selectOpt(${oi})" style="animation-delay:${oi * 0.04}s">
+      <div class="opt-key">${String.fromCharCode(65 + oi)}</div>
+      <div class="opt-text">${op}</div>
+    </div>`,
+          )
+          .join("");
+
+        // Nav buttons
+        document.getElementById("btn-prev").disabled = cur === 0;
+        document.getElementById("btn-next").textContent =
+          cur === pool.length - 1 ? "Lihat Ringkasan →" : "Berikutnya →";
+
+        // Ragu buttons
+        const isRagu = ragu[cur];
+        document.getElementById("btn-ragu").style.display = isRagu
+          ? "none"
+          : "flex";
+        document.getElementById("btn-clear-ragu").style.display = isRagu
+          ? "flex"
+          : "none";
+
+        // Nav grid
+        renderNavGrid();
+        closeSidebar();
+      }
+
+      function renderNavGrid() {
+        const { pool, cur, answers, ragu } = ujianState;
+        const grid = document.getElementById("soal-nav-grid");
+        grid.innerHTML = pool
+          .map((_, i) => {
+            let cls = "snum";
+            if (answers[i] !== -1 && ragu[i]) cls += " ragu";
+            else if (answers[i] !== -1) cls += " answered";
+            else if (ragu[i]) cls += " ragu";
+            if (i === cur) cls += " active";
+            return `<div class="${cls}" onclick="jumpQ(${i})">${i + 1}</div>`;
+          })
+          .join("");
+      }
+
+      function selectOpt(oi) {
+        ujianState.answers[ujianState.cur] = oi;
+        renderUjianQ();
+      }
+      function jumpQ(i) {
+        ujianState.cur = i;
+        renderUjianQ();
+      }
+      function prevQ() {
+        if (ujianState.cur > 0) {
+          ujianState.cur--;
+          renderUjianQ();
+        }
+      }
+      function nextQ() {
+        if (ujianState.cur < ujianState.pool.length - 1) {
+          ujianState.cur++;
+          renderUjianQ();
+        }
+      }
+      function markRagu() {
+        ujianState.ragu[ujianState.cur] = true;
+        renderUjianQ();
+      }
+      function clearRagu() {
+        ujianState.ragu[ujianState.cur] = false;
+        renderUjianQ();
+      }
+
+      // ================================================================
+      // TIMER
+      // ================================================================
+      function startTimer() {
+        updateTimerDisplay();
+        timerInt = setInterval(() => {
+          ujianState.secLeft--;
+          updateTimerDisplay();
+          if (ujianState.secLeft <= 0) {
+            clearTimer();
+            finishUjian();
+          }
+        }, 1000);
+      }
+      function clearTimer() {
+        if (timerInt) {
+          clearInterval(timerInt);
+          timerInt = null;
+        }
+      }
+      function updateTimerDisplay() {
+        const s = ujianState.secLeft;
+        const pct = Math.round((s / ujianState.totalSec) * 100);
+        const disp = document.getElementById("timer-disp");
+        const bar = document.getElementById("timer-bar");
+        disp.textContent = fmtTime(s);
+        disp.className =
+          "timer-display" + (s < 300 ? " danger" : s < 600 ? " warn" : "");
+        bar.style.width = pct + "%";
+        bar.style.background =
+          pct > 30 ? "var(--green)" : pct > 10 ? "var(--warn)" : "var(--red)";
+      }
+
+      // ================================================================
+      // FINISH
+      // ================================================================
+      function confirmFinish() {
+        const { pool, answers } = ujianState;
+        const skip = answers.filter((a) => a === -1).length;
+        openModal(
+          "Kumpulkan Jawaban",
+          skip > 0
+            ? `Masih ada ${skip} soal yang belum dijawab. Yakin ingin mengumpulkan?`
+            : "Yakin ingin mengumpulkan semua jawaban?",
+          finishUjian,
+          true,
+        );
+      }
+
+      function finishUjian() {
+        clearTimer();
+        const { pool, answers, nama, tok, startAt } = ujianState;
+        let benar = 0,
+          salah = 0,
+          skip = 0;
+        pool.forEach((q, i) => {
+          if (answers[i] === -1) skip++;
+          else if (answers[i] === q.answer) benar++;
+          else salah++;
+        });
+        const total = pool.length;
+        const nilai = Math.round((benar / total) * 100);
+        const durasiSec = Math.floor((Date.now() - startAt) / 1000);
+        const durasiMenit = Math.ceil(durasiSec / 60);
+
+        // Save response
+        const r = getR();
+        r.push({
+          nama,
+          token: tok.code,
+          sesi: tok.sesi,
+          nilai,
+          benar,
+          salah,
+          skip,
+          total,
+          durasiMenit,
+          selesaiAt: Date.now(),
+        });
+        setR(r);
+
+        // Remove from aktif
+        const a = getA().filter((x) => x.token !== tok.code);
+        setA(a);
+
+        // Show result
+        document.getElementById("res-score").textContent = nilai;
+        document.getElementById("res-score").style.color =
+          nilai >= 70
+            ? "var(--green)"
+            : nilai >= 50
+              ? "var(--warn)"
+              : "var(--red)";
+        document.getElementById("res-name").textContent = nama;
+        document.getElementById("res-token-disp").textContent =
+          tok.code + " · " + tok.sesi;
+        document.getElementById("r-benar").textContent = benar;
+        document.getElementById("r-salah").textContent = salah;
+        document.getElementById("r-skip").textContent = skip;
+
+        // Review
+        document.getElementById("review-body").innerHTML = pool
+          .map((q, i) => {
+            const ua = answers[i];
+            const ca = q.answer;
+            const ok = ua === ca;
+            return `<div class="review-card" style="animation:fadeUp .3s ease ${i * 0.04}s both">
+      <div class="review-head">
+        <span class="badge ${ok ? "badge-green" : ua === -1 ? "badge-purple" : "badge-red"}">${ok ? "✓ Benar" : ua === -1 ? "Dilewati" : "✕ Salah"}</span>
+        <div class="review-q-text">${i + 1}. ${q.text}</div>
+      </div>
+      <div class="review-opts">
+        ${q.options
+          .map(
+            (op, oi) => `
+          <div class="review-opt${oi === ca ? " correct" : ""}${oi === ua && oi !== ca ? " wrong" : ""}">
+            <div class="review-opt-key">${String.fromCharCode(65 + oi)}</div>
+            <span style="flex:1">${op}</span>
+            ${oi === ca ? '<span style="font-size:11px;font-weight:700">✓ Benar</span>' : ""}
+            ${oi === ua && oi !== ca ? '<span style="font-size:11px">Jawaban kamu</span>' : ""}
+          </div>`,
+          )
+          .join("")}
+      </div>
+    </div>`;
+          })
+          .join("");
+
+        show("s-result");
+      }
+
+      // ================================================================
+      // INIT
+      // ================================================================
+      resetQ();
+    </script>
+  </body>
+</html>
