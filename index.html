@@ -6,11 +6,12 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>IanTest — Sistem Ujian Digital</title>
+    <title>Simulasi Ujian — Sistem Ujian Digital</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
       :root {
         --bg: #06080f;
@@ -32,6 +33,8 @@
         --red-light: rgba(239, 68, 68, 0.15);
         --purple: #8b5cf6;
         --purple-light: rgba(139, 92, 246, 0.15);
+        --cyan: #06b6d4;
+        --cyan-light: rgba(6, 182, 212, 0.15);
         --text: #f1f5f9;
         --text2: #94a3b8;
         --text3: #475569;
@@ -98,12 +101,7 @@
           opacity: 1;
         }
         50% {
-          opacity: 0.6;
-        }
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
+          opacity: 0.55;
         }
       }
       @keyframes pop {
@@ -119,12 +117,21 @@
           opacity: 1;
         }
       }
-      @keyframes shimmer {
-        0% {
-          background-position: -200% 0;
-        }
+      @keyframes shake {
+        0%,
         100% {
-          background-position: 200% 0;
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-6px);
+        }
+        75% {
+          transform: translateX(6px);
+        }
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
       }
 
@@ -138,9 +145,7 @@
         flex-direction: column;
       }
 
-      /* ================================================================
-   HOME
-================================================================ */
+      /* ===== HOME ===== */
       #s-home {
         align-items: center;
         justify-content: center;
@@ -180,7 +185,7 @@
         position: relative;
         z-index: 1;
         width: 100%;
-        max-width: 460px;
+        max-width: 480px;
         text-align: center;
         animation: fadeUp 0.5s ease;
       }
@@ -207,7 +212,7 @@
         animation: pulse-slow 2s infinite;
       }
       .home-title {
-        font-size: clamp(1.8rem, 6vw, 3.2rem);
+        font-size: clamp(2rem, 6vw, 3.2rem);
         font-weight: 800;
         line-height: 1.12;
         margin-bottom: 0.75rem;
@@ -221,7 +226,7 @@
         color: var(--text2);
         margin-bottom: 2.5rem;
         line-height: 1.65;
-        max-width: 340px;
+        max-width: 360px;
         margin-left: auto;
         margin-right: auto;
       }
@@ -302,9 +307,7 @@
         color: var(--text2);
       }
 
-      /* ================================================================
-   GLOBAL UI COMPONENTS
-================================================================ */
+      /* ===== GLOBAL ===== */
       .topbar {
         background: var(--bg2);
         border-bottom: 1px solid var(--border);
@@ -336,9 +339,6 @@
         font-size: 11px;
         color: var(--text2);
         margin-top: 1px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
       .topbar-right {
         display: flex;
@@ -371,6 +371,11 @@
       .btn:active {
         transform: scale(0.96);
       }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
       .btn-primary {
         background: var(--accent);
         border-color: var(--accent);
@@ -378,7 +383,6 @@
       }
       .btn-primary:hover {
         background: #2563eb;
-        border-color: #2563eb;
         box-shadow: 0 4px 20px var(--accent-glow);
       }
       .btn-green {
@@ -388,7 +392,6 @@
       }
       .btn-green:hover {
         background: #059669;
-        box-shadow: 0 4px 20px var(--green-light);
       }
       .btn-red {
         background: var(--red);
@@ -402,6 +405,17 @@
         background: var(--warn);
         border-color: var(--warn);
         color: #000;
+      }
+      .btn-warn:hover {
+        background: #d97706;
+      }
+      .btn-cyan {
+        background: var(--cyan);
+        border-color: var(--cyan);
+        color: #fff;
+      }
+      .btn-cyan:hover {
+        background: #0891b2;
       }
       .btn-sm {
         padding: 6px 12px;
@@ -441,10 +455,7 @@
         min-height: 80px;
         line-height: 1.6;
       }
-      select.inp {
-        cursor: pointer;
-      }
-      label.lbl {
+      .lbl {
         display: block;
         font-size: 12px;
         font-weight: 600;
@@ -496,6 +507,11 @@
         color: var(--purple);
         border: 1px solid rgba(139, 92, 246, 0.25);
       }
+      .badge-cyan {
+        background: var(--cyan-light);
+        color: var(--cyan);
+        border: 1px solid rgba(6, 182, 212, 0.25);
+      }
 
       .card {
         background: var(--bg2);
@@ -510,15 +526,7 @@
         margin-bottom: 1rem;
       }
 
-      .divider {
-        height: 1px;
-        background: var(--border);
-        margin: 1rem 0;
-      }
-
-      /* ================================================================
-   LOGIN SCREENS
-================================================================ */
+      /* ===== LOGIN ===== */
       #s-admin-login,
       #s-peserta-login {
         align-items: center;
@@ -529,10 +537,10 @@
       .login-box {
         background: var(--bg2);
         border: 1px solid var(--border);
-        border-radius: var(--r-xl);
+        border-radius: var(--r-lg);
         padding: 2rem;
         width: 100%;
-        max-width: 400px;
+        max-width: 420px;
         animation: fadeUp 0.35s ease;
         box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
       }
@@ -569,9 +577,7 @@
         color: var(--text2);
       }
 
-      /* ================================================================
-   ADMIN PANEL LAYOUT
-================================================================ */
+      /* ===== ADMIN LAYOUT ===== */
       #s-admin {
         background: var(--bg);
       }
@@ -582,8 +588,6 @@
         height: calc(100vh - 57px);
         overflow: hidden;
       }
-
-      /* SIDEBAR */
       .sidebar {
         width: var(--sidebar);
         background: var(--bg2);
@@ -603,7 +607,6 @@
         font-size: 16px;
         font-weight: 800;
         color: var(--text);
-        letter-spacing: -0.3px;
       }
       .sidebar-logo-sub {
         font-size: 11px;
@@ -634,6 +637,7 @@
         font-weight: 500;
         margin-bottom: 2px;
         border: 1px solid transparent;
+        user-select: none;
       }
       .smenu-item:hover {
         background: var(--bg3);
@@ -699,7 +703,6 @@
         color: var(--text2);
       }
 
-      /* MAIN CONTENT */
       .admin-main {
         flex: 1;
         overflow-y: auto;
@@ -714,10 +717,9 @@
         display: block;
       }
 
-      /* STATS GRID */
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
         gap: 12px;
         margin-bottom: 1.5rem;
       }
@@ -756,6 +758,9 @@
       .stat-card.purple::before {
         background: linear-gradient(90deg, var(--purple), transparent);
       }
+      .stat-card.cyan::before {
+        background: linear-gradient(90deg, var(--cyan), transparent);
+      }
       .stat-label {
         font-size: 11px;
         font-weight: 600;
@@ -765,7 +770,7 @@
         margin-bottom: 0.5rem;
       }
       .stat-value {
-        font-size: 28px;
+        font-size: 26px;
         font-weight: 800;
         color: var(--text);
         line-height: 1;
@@ -777,112 +782,53 @@
         margin-top: 4px;
       }
 
-      /* TOKEN LIST */
-      .token-grid {
+      .section-header {
         display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .token-item {
-        background: var(--bg3);
-        border: 1px solid var(--border);
-        border-radius: var(--r);
-        padding: 1rem 1.25rem;
-        display: flex;
-        align-items: center;
+        align-items: flex-start;
+        justify-content: space-between;
         gap: 12px;
-        transition: all 0.18s;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
       }
-      .token-item:hover {
-        border-color: var(--border2);
-      }
-      .token-code {
-        font-family: var(--mono);
+      .section-title {
         font-size: 16px;
-        font-weight: 600;
+        font-weight: 700;
         color: var(--text);
-        letter-spacing: 2.5px;
-        flex-shrink: 0;
       }
-      .token-info {
-        flex: 1;
-        min-width: 0;
-      }
-      .token-session {
+      .section-sub {
         font-size: 13px;
-        font-weight: 600;
-        color: var(--text);
-        margin-bottom: 2px;
-      }
-      .token-meta {
-        font-size: 12px;
         color: var(--text2);
+        margin-top: 2px;
       }
-      .token-actions {
+      .section-actions {
         display: flex;
-        align-items: center;
         gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
         flex-shrink: 0;
       }
 
-      /* SOAL LIST */
-      .soal-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .soal-item {
-        background: var(--bg3);
-        border: 1px solid var(--border);
-        border-radius: var(--r);
-        padding: 1rem 1.25rem;
-        transition: border-color 0.18s;
-      }
-      .soal-item:hover {
-        border-color: var(--border2);
-      }
-      .soal-num {
-        font-family: var(--mono);
+      .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 99px;
+        padding: 4px 10px;
         font-size: 11px;
         font-weight: 600;
-        color: var(--text2);
-        margin-bottom: 4px;
-      }
-      .soal-text {
-        font-size: 14px;
-        color: var(--text);
-        line-height: 1.55;
-        margin-bottom: 8px;
-      }
-      .soal-opts {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 8px;
-      }
-      .soal-opt {
-        font-size: 12px;
-        padding: 3px 10px;
-        border-radius: 6px;
-        background: var(--bg4);
-        border: 1px solid var(--border);
-        color: var(--text2);
-      }
-      .soal-opt.correct {
-        background: var(--green-light);
-        border-color: rgba(16, 185, 129, 0.3);
         color: var(--green);
-        font-weight: 600;
       }
-      .soal-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 8px;
+      .rt-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--green);
+        animation: pulse-slow 1.5s infinite;
+        flex-shrink: 0;
       }
 
-      /* RESPONSE TABLE */
       .resp-table-wrap {
         overflow-x: auto;
         border-radius: var(--r);
@@ -892,7 +838,7 @@
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
-        min-width: 600px;
+        min-width: 540px;
       }
       .resp-table th {
         padding: 0.75rem 1rem;
@@ -916,7 +862,7 @@
         border-bottom: none;
       }
       .resp-table tr:hover td {
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(255, 255, 255, 0.015);
       }
       .resp-table .mono {
         font-family: var(--mono);
@@ -924,53 +870,214 @@
         color: var(--text2);
       }
 
-      /* SECTION HEADER */
-      .section-header {
+      .soal-list-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .soal-item {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 1rem 1.25rem;
+        transition: border-color 0.18s;
+      }
+      .soal-item:hover {
+        border-color: var(--border2);
+      }
+      .soal-num {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text2);
+        margin-bottom: 4px;
+      }
+      .soal-text {
+        font-size: 14px;
+        color: var(--text);
+        line-height: 1.55;
+        margin-bottom: 8px;
+      }
+      .soal-opts-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .soal-opt-chip {
+        font-size: 12px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        background: var(--bg4);
+        border: 1px solid var(--border);
+        color: var(--text2);
+      }
+      .soal-opt-chip.correct {
+        background: var(--green-light);
+        border-color: rgba(16, 185, 129, 0.3);
+        color: var(--green);
+        font-weight: 600;
+      }
+      .soal-footer {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 1.25rem;
         flex-wrap: wrap;
-      }
-      .section-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--text);
-      }
-      .section-sub {
-        font-size: 13px;
-        color: var(--text2);
-        margin-top: 2px;
+        gap: 8px;
       }
 
-      /* GENERATE TOKEN FORM */
-      .gen-form {
+      /* ===== UPLOAD ZONE ===== */
+      .upload-zone {
+        border: 2px dashed var(--border2);
+        border-radius: var(--r-lg);
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+      }
+      .upload-zone:hover,
+      .upload-zone.drag {
+        border-color: var(--accent);
+        background: var(--accent-light);
+      }
+      .upload-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+      }
+      .upload-icon {
+        font-size: 36px;
+        margin-bottom: 0.75rem;
+        opacity: 0.6;
+      }
+      .upload-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .upload-sub {
+        font-size: 12px;
+        color: var(--text2);
+      }
+      .upload-template {
+        margin-top: 1rem;
+        padding: 0.875rem 1rem;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        text-align: left;
+      }
+      .upload-template-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text2);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .upload-template table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+      .upload-template th {
+        padding: 4px 8px;
+        background: var(--bg4);
+        color: var(--text2);
+        font-weight: 600;
+        font-family: var(--mono);
+      }
+      .upload-template td {
+        padding: 4px 8px;
+        color: var(--text3);
+        font-family: var(--mono);
+      }
+
+      /* ===== STATISTIK CHARTS ===== */
+      .chart-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 1rem;
+      }
+      .chart-box {
         background: var(--bg3);
         border: 1px solid var(--border);
         border-radius: var(--r-lg);
         padding: 1.25rem;
-        margin-bottom: 1.25rem;
       }
-      .gen-form-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 12px;
-        align-items: end;
-        margin-bottom: 12px;
+      .chart-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text2);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
       }
-
-      /* REALTIME DOT */
-      .rt-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--green);
-        animation: pulse-slow 1.5s infinite;
+      .bar-chart {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .bar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+      }
+      .bar-label {
+        width: 80px;
+        color: var(--text2);
+        text-align: right;
         flex-shrink: 0;
       }
+      .bar-track {
+        flex: 1;
+        height: 10px;
+        background: var(--bg4);
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 99px;
+        transition: width 0.6s ease;
+      }
+      .bar-val {
+        width: 36px;
+        color: var(--text);
+        font-weight: 600;
+        font-family: var(--mono);
+        text-align: right;
+      }
+      .dist-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .dist-item {
+        background: var(--bg4);
+        border-radius: 8px;
+        padding: 6px 10px;
+        text-align: center;
+        min-width: 52px;
+      }
+      .dist-range {
+        font-size: 11px;
+        color: var(--text2);
+        margin-bottom: 2px;
+      }
+      .dist-count {
+        font-size: 16px;
+        font-weight: 800;
+        font-family: var(--mono);
+        color: var(--text);
+      }
 
-      /* MOBILE SIDEBAR OVERLAY */
       .sidebar-overlay {
         display: none;
         position: fixed;
@@ -986,30 +1093,37 @@
         display: none;
       }
 
-      /* ================================================================
-   PESERTA LOGIN
-================================================================ */
-      #s-peserta-login .login-box {
-        border-color: rgba(16, 185, 129, 0.15);
+      /* ===== PESERTA LOGIN ===== */
+      .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
       }
 
-      /* ================================================================
-   UJIAN LAYOUT
-================================================================ */
+      /* ===== UJIAN ===== */
       #s-ujian {
         background: var(--bg);
         overflow: hidden;
       }
+      .ujian-topbar {
+        background: var(--bg2);
+        border-bottom: 1px solid var(--border);
+        padding: 0.875rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-shrink: 0;
+      }
       .ujian-layout {
         display: flex;
         flex: 1;
-        height: calc(100vh - 57px);
+        height: calc(100vh - 65px);
         overflow: hidden;
       }
 
-      /* UJIAN SIDEBAR (soal nav) */
       .ujian-sidebar {
-        width: 240px;
+        width: 220px;
         background: var(--bg2);
         border-right: 1px solid var(--border);
         display: flex;
@@ -1032,13 +1146,12 @@
       .legend {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 0;
+        gap: 5px;
       }
       .leg-item {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
         font-size: 11px;
         color: var(--text2);
       }
@@ -1058,7 +1171,7 @@
         background: var(--bg5);
         border: 1px solid var(--border2);
       }
-      .soal-grid {
+      .soal-num-grid {
         padding: 1rem;
         display: flex;
         flex-wrap: wrap;
@@ -1068,9 +1181,9 @@
         align-content: flex-start;
       }
       .snum {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
+        width: 34px;
+        height: 34px;
+        border-radius: 7px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1081,12 +1194,13 @@
         border: 1.5px solid var(--border2);
         background: var(--bg3);
         color: var(--text2);
+        user-select: none;
       }
       .snum:hover {
         border-color: var(--accent);
         color: var(--accent);
       }
-      .snum.active {
+      .snum.cur {
         border-color: var(--accent);
         background: var(--accent-light);
         color: var(--accent);
@@ -1102,16 +1216,15 @@
         border-color: rgba(245, 158, 11, 0.4);
         color: var(--warn);
       }
-      .snum.answered.active {
+      .snum.answered.cur {
         border-color: var(--green);
         box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
       }
-      .snum.ragu.active {
+      .snum.ragu.cur {
         border-color: var(--warn);
         box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
       }
 
-      /* UJIAN MAIN */
       .ujian-main {
         flex: 1;
         overflow-y: auto;
@@ -1121,7 +1234,7 @@
       .ujian-q-area {
         flex: 1;
         padding: 1.5rem;
-        max-width: 780px;
+        max-width: 760px;
         width: 100%;
         margin: 0 auto;
       }
@@ -1132,13 +1245,6 @@
         margin-bottom: 1.25rem;
         flex-wrap: wrap;
         gap: 8px;
-      }
-      .ujian-q-num {
-        font-size: 12px;
-        font-weight: 700;
-        color: var(--text2);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
       }
       .ujian-q-text {
         font-size: 15px;
@@ -1168,6 +1274,7 @@
         cursor: pointer;
         transition: all 0.18s;
         animation: fadeUp 0.2s ease both;
+        user-select: none;
       }
       .opt:hover {
         border-color: var(--border3);
@@ -1223,7 +1330,6 @@
         flex: 1;
       }
 
-      /* UJIAN NAV BOTTOM */
       .ujian-nav {
         background: var(--bg2);
         border-top: 1px solid var(--border);
@@ -1241,14 +1347,9 @@
         gap: 8px;
         flex-wrap: wrap;
         justify-content: center;
+        flex: 1;
       }
 
-      /* TIMER */
-      .timer-wrap {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
       .timer-display {
         font-family: var(--mono);
         font-size: 20px;
@@ -1268,8 +1369,7 @@
         background: var(--bg4);
         border-radius: 99px;
         overflow: hidden;
-        flex: 1;
-        min-width: 60px;
+        width: 100px;
       }
       .timer-bar-inner {
         height: 100%;
@@ -1279,47 +1379,54 @@
           width 1s linear,
           background 0.5s;
       }
-
-      /* UJIAN TOPBAR */
-      .ujian-topbar {
-        background: var(--bg2);
-        border-bottom: 1px solid var(--border);
-        padding: 0.875rem 1.25rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-shrink: 0;
-        flex-wrap: wrap;
-      }
-      .ujian-top-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 0;
-      }
-      .ujian-top-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-shrink: 0;
-      }
-      .progress-info {
-        font-size: 12px;
-        color: var(--text2);
-      }
-
-      /* MOBILE NAV TOGGLE for ujian */
       .ujian-nav-toggle {
         display: none;
       }
-      .ujian-mobile-sidebar {
+
+      /* ===== FULLSCREEN WARNING ===== */
+      .fs-warn {
+        position: fixed;
+        inset: 0;
+        background: rgba(6, 8, 15, 0.97);
+        z-index: 9998;
         display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem;
+      }
+      .fs-warn.on {
+        display: flex;
+        animation: fadeIn 0.2s ease;
+      }
+      .fs-warn-icon {
+        font-size: 56px;
+        margin-bottom: 1rem;
+        animation: shake 0.4s ease;
+      }
+      .fs-warn-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--red);
+        margin-bottom: 0.5rem;
+      }
+      .fs-warn-sub {
+        font-size: 14px;
+        color: var(--text2);
+        margin-bottom: 2rem;
+        max-width: 360px;
+        line-height: 1.6;
+      }
+      .fs-warn-count {
+        font-size: 48px;
+        font-weight: 800;
+        font-family: var(--mono);
+        color: var(--warn);
+        margin-bottom: 1rem;
       }
 
-      /* ================================================================
-   RESULT SCREEN
-================================================================ */
+      /* ===== RESULT ===== */
       #s-result {
         background: var(--bg);
         overflow-y: auto;
@@ -1329,23 +1436,22 @@
         padding: 2.5rem 1rem 1.5rem;
       }
       .result-score-ring {
-        width: 120px;
-        height: 120px;
+        width: 130px;
+        height: 130px;
         border-radius: 50%;
-        border: 3px solid var(--border);
+        border: 3px solid var(--border2);
         background: var(--bg2);
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 1.25rem;
-        position: relative;
         animation: pop 0.4s ease;
+        position: relative;
       }
       .result-score-val {
-        font-size: 36px;
+        font-size: 38px;
         font-weight: 800;
         font-family: var(--mono);
-        color: var(--text);
       }
       .result-name {
         font-size: 20px;
@@ -1353,16 +1459,15 @@
         color: var(--text);
         margin-bottom: 4px;
       }
-      .result-token {
+      .result-sub {
         font-size: 12px;
         color: var(--text2);
-        font-family: var(--mono);
       }
       .result-stats {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 10px;
-        max-width: 400px;
+        max-width: 480px;
         margin: 1.5rem auto 0;
       }
       .result-stat {
@@ -1373,7 +1478,7 @@
         text-align: center;
       }
       .result-stat-val {
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 800;
         font-family: var(--mono);
         line-height: 1;
@@ -1458,28 +1563,7 @@
         color: #fff;
       }
 
-      /* EMPTY STATE */
-      .empty-state {
-        text-align: center;
-        padding: 3rem 1rem;
-      }
-      .empty-icon {
-        font-size: 36px;
-        margin-bottom: 0.75rem;
-        opacity: 0.4;
-      }
-      .empty-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text2);
-        margin-bottom: 0.5rem;
-      }
-      .empty-sub {
-        font-size: 13px;
-        color: var(--text3);
-      }
-
-      /* MODAL */
+      /* ===== MODAL ===== */
       .modal-overlay {
         display: none;
         position: fixed;
@@ -1489,15 +1573,15 @@
         align-items: center;
         justify-content: center;
         padding: 1rem;
-        animation: fadeIn 0.2s ease;
       }
       .modal-overlay.on {
         display: flex;
+        animation: fadeIn 0.2s ease;
       }
       .modal {
         background: var(--bg2);
         border: 1px solid var(--border);
-        border-radius: var(--r-xl);
+        border-radius: var(--r-lg);
         padding: 2rem;
         width: 100%;
         max-width: 420px;
@@ -1523,7 +1607,7 @@
         flex-wrap: wrap;
       }
 
-      /* TOAST */
+      /* ===== TOAST ===== */
       .toast-wrap {
         position: fixed;
         bottom: 1.5rem;
@@ -1548,22 +1632,25 @@
         animation: fadeUp 0.25s ease;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         min-width: 200px;
-        max-width: 320px;
+        max-width: 300px;
       }
       .toast.success {
-        border-color: rgba(16, 185, 129, 0.3);
-        background: rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.35);
+        background: rgba(16, 185, 129, 0.07);
       }
       .toast.error {
-        border-color: rgba(239, 68, 68, 0.3);
-        background: rgba(239, 68, 68, 0.08);
+        border-color: rgba(239, 68, 68, 0.35);
+        background: rgba(239, 68, 68, 0.07);
       }
       .toast.info {
-        border-color: rgba(59, 130, 246, 0.3);
-        background: rgba(59, 130, 246, 0.08);
+        border-color: rgba(59, 130, 246, 0.35);
+        background: rgba(59, 130, 246, 0.07);
+      }
+      .toast.warn {
+        border-color: rgba(245, 158, 11, 0.35);
+        background: rgba(245, 158, 11, 0.07);
       }
 
-      /* ANSWER ROW */
       .ans-row {
         display: flex;
         gap: 8px;
@@ -1595,65 +1682,43 @@
         accent-color: var(--green);
       }
 
-      /* TABS */
-      .tab-bar {
-        display: flex;
-        gap: 2px;
-        background: var(--bg3);
-        border-radius: 10px;
-        padding: 3px;
-        margin-bottom: 1.25rem;
+      .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
       }
-      .tab-btn {
-        flex: 1;
-        padding: 7px 12px;
-        border-radius: 7px;
-        border: none;
-        background: transparent;
+      .empty-icon {
+        font-size: 36px;
+        margin-bottom: 0.75rem;
+        opacity: 0.4;
+      }
+      .empty-title {
+        font-size: 15px;
+        font-weight: 600;
         color: var(--text2);
+        margin-bottom: 0.5rem;
+      }
+      .empty-sub {
         font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.18s;
-        font-family: var(--sans);
-      }
-      .tab-btn.on {
-        background: var(--bg5);
-        color: var(--text);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        color: var(--text3);
       }
 
-      /* REALTIME BADGE */
-      .live-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.25);
+      /* progress bar */
+      .prog-bar-wrap {
+        background: var(--bg4);
         border-radius: 99px;
-        padding: 4px 10px;
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--green);
+        height: 6px;
+        overflow: hidden;
+        margin-top: 8px;
+      }
+      .prog-bar {
+        height: 6px;
+        border-radius: 99px;
+        background: var(--accent);
+        transition: width 0.3s;
       }
 
-      /* ================================================================
-   RESPONSIVE — MOBILE
-================================================================ */
+      /* ===== RESPONSIVE ===== */
       @media (max-width: 768px) {
-        :root {
-          --sidebar: 100%;
-        }
-
-        /* HOME */
-        .home-grid {
-          grid-template-columns: 1fr 1fr;
-        }
-        .home-title {
-          font-size: 1.75rem;
-        }
-
-        /* ADMIN MOBILE */
         .mobile-menu-btn {
           display: flex;
         }
@@ -1668,14 +1733,10 @@
         }
         .sidebar.open {
           transform: translateX(0);
-          box-shadow: 0 0 60px rgba(0, 0, 0, 0.7);
+          box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
         }
         .admin-layout {
           height: calc(100vh - 57px);
-        }
-        .admin-main {
-          height: 100%;
-          overflow-y: auto;
         }
         .admin-page {
           padding: 1rem;
@@ -1683,27 +1744,12 @@
         .stats-grid {
           grid-template-columns: 1fr 1fr;
         }
-        .token-item {
-          flex-wrap: wrap;
+        .chart-row {
+          grid-template-columns: 1fr;
         }
-        .token-actions {
-          width: 100%;
+        .settings-grid {
+          grid-template-columns: 1fr;
         }
-        .token-actions .btn {
-          flex: 1;
-        }
-        .gen-form-row {
-          grid-template-columns: 1fr 1fr;
-        }
-        .resp-table {
-          font-size: 12px;
-        }
-        .resp-table th,
-        .resp-table td {
-          padding: 0.6rem 0.75rem;
-        }
-
-        /* UJIAN MOBILE */
         .ujian-sidebar {
           display: none;
           position: fixed;
@@ -1711,22 +1757,17 @@
           top: 0;
           bottom: 0;
           z-index: 200;
-          width: 280px;
+          width: 260px;
           transform: translateX(-100%);
           transition: transform 0.3s ease;
         }
         .ujian-sidebar.open {
           display: flex;
           transform: translateX(0);
-          box-shadow: 0 0 60px rgba(0, 0, 0, 0.7);
+          box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
         }
         .ujian-layout {
-          height: calc(100vh - 57px);
-          flex-direction: column;
-        }
-        .ujian-main {
-          flex: 1;
-          overflow-y: auto;
+          height: calc(100vh - 105px);
         }
         .ujian-q-area {
           padding: 1rem;
@@ -1735,38 +1776,25 @@
           display: flex;
         }
         .ujian-nav {
+          padding: 0.75rem 1rem;
           gap: 6px;
         }
         .ujian-nav-center {
           gap: 6px;
         }
-        .btn-sm-mobile .btn-text {
-          display: none;
-        }
         .timer-display {
           font-size: 16px;
         }
+        .timer-bar-outer {
+          width: 70px;
+        }
         .ujian-topbar {
+          padding: 0.75rem 1rem;
           flex-wrap: wrap;
           gap: 8px;
         }
-        .ujian-top-right {
-          flex: 1;
-          justify-content: flex-end;
-        }
-        .soal-grid {
-          gap: 5px;
-        }
-        .snum {
-          width: 32px;
-          height: 32px;
-          font-size: 11px;
-        }
-
-        /* RESULT MOBILE */
         .result-stats {
-          grid-template-columns: repeat(3, 1fr);
-          gap: 8px;
+          grid-template-columns: repeat(2, 1fr);
         }
         .result-stat-val {
           font-size: 20px;
@@ -1774,21 +1802,21 @@
         .review-wrap {
           padding: 0 0.75rem 2rem;
         }
-
-        /* TOPBAR */
-        .topbar {
-          padding: 0.75rem 1rem;
+        .resp-table {
+          font-size: 12px;
         }
-        .topbar-title {
-          font-size: 14px;
+        .resp-table th,
+        .resp-table td {
+          padding: 0.6rem 0.75rem;
+        }
+        .bar-label {
+          width: 55px;
+          font-size: 11px;
         }
       }
       @media (max-width: 480px) {
         .home-grid {
           grid-template-columns: 1fr;
-        }
-        .home-card {
-          padding: 1.25rem 1rem;
         }
         .stats-grid {
           grid-template-columns: 1fr 1fr;
@@ -1796,81 +1824,93 @@
         .modal {
           padding: 1.5rem;
         }
-        .ujian-nav {
-          padding: 0.75rem 1rem;
-        }
         .login-box {
           padding: 1.5rem;
         }
-        .gen-form-row {
-          grid-template-columns: 1fr;
+        .result-score-ring {
+          width: 105px;
+          height: 105px;
         }
         .result-score-val {
-          font-size: 28px;
+          font-size: 30px;
         }
-        .result-score-ring {
-          width: 100px;
-          height: 100px;
+        .result-stats {
+          grid-template-columns: repeat(2, 1fr);
         }
       }
     </style>
   </head>
   <body>
-    <!-- TOAST CONTAINER -->
+    <!-- FULLSCREEN WARNING -->
+    <div class="fs-warn" id="fs-warn">
+      <div class="fs-warn-icon">⚠️</div>
+      <div class="fs-warn-title">Kamu Keluar Fullscreen!</div>
+      <div class="fs-warn-sub">
+        Ujian mengharuskan mode fullscreen. Kembali ke fullscreen dalam:
+      </div>
+      <div class="fs-warn-count" id="fs-countdown">5</div>
+      <button
+        class="btn btn-primary"
+        onclick="reenterFullscreen()"
+        style="padding: 12px 24px; font-size: 15px"
+      >
+        ↑ Kembali ke Fullscreen
+      </button>
+      <div
+        style="margin-top: 12px; font-size: 12px; color: var(--text3)"
+        id="fs-warn-sub2"
+      >
+        Keluar fullscreen ke-<span id="fs-viol">1</span> dari 3 · Ujian otomatis
+        dikumpulkan di pelanggaran ke-3
+      </div>
+    </div>
+
     <div class="toast-wrap" id="toast-wrap"></div>
 
-    <!-- MODAL -->
     <div class="modal-overlay" id="modal">
       <div class="modal">
         <div class="modal-title" id="modal-title">Konfirmasi</div>
         <div class="modal-sub" id="modal-body">Apakah kamu yakin?</div>
         <div class="modal-btns">
           <button class="btn" onclick="closeModal()">Batal</button>
-          <button class="btn btn-red" id="modal-confirm-btn" onclick="">
-            Ya, Lanjutkan
-          </button>
+          <button class="btn btn-red" id="modal-ok-btn">Ya, Lanjutkan</button>
         </div>
       </div>
     </div>
 
-    <!-- SIDEBAR OVERLAY (admin & ujian) -->
     <div
       class="sidebar-overlay"
       id="sidebar-overlay"
       onclick="closeSidebar()"
     ></div>
 
-    <!-- ================================================================
-     HOME
-================================================================ -->
+    <!-- ================================================================ HOME -->
     <div id="s-home" class="screen on">
       <div class="orb orb1"></div>
       <div class="orb orb2"></div>
       <div class="home-wrap">
-        <div class="home-badge"><span></span> Sistem Ujian Digital</div>
-        <h1 class="home-title">IanTest<br />Platform</h1>
+        <div class="home-badge"><span></span>Sistem Ujian Digital</div>
+        <h1 class="home-title">Simulasi Ujian<br />Platform</h1>
         <p class="home-sub">
-          Simulasi ujian Test berbasis token dengan dashboard admin realtime dan
-          analitik lengkap.
+          Simulasi ujian test dengan dashboard admin realtime, import soal
+          Excel/CSV, statistik lengkap dan mode fullscreen.
         </p>
         <div class="home-grid">
           <div class="home-card admin" onclick="goAdminLogin()">
             <div class="hc-icon">🛡️</div>
             <div class="hc-label">Panel Admin</div>
-            <div class="hc-desc">Kelola soal, token & pantau peserta</div>
+            <div class="hc-desc">Kelola soal &amp; pantau peserta</div>
           </div>
           <div class="home-card peserta" onclick="goPesertaLogin()">
             <div class="hc-icon">📝</div>
             <div class="hc-label">Ruang Peserta</div>
-            <div class="hc-desc">Masuk ujian dengan token</div>
+            <div class="hc-desc">Mulai ujian sekarang</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ================================================================
-     ADMIN LOGIN
-================================================================ -->
+    <!-- ================================================================ ADMIN LOGIN -->
     <div id="s-admin-login" class="screen">
       <div class="login-box">
         <div class="login-head">
@@ -1879,8 +1919,8 @@
           <div class="login-sub">Masukkan kredensial untuk mengakses panel</div>
         </div>
         <div class="form-row">
-          <label class="lbl">Username</label>
-          <input
+          <label class="lbl">Username</label
+          ><input
             class="inp"
             type="text"
             id="adm-usr"
@@ -1889,8 +1929,8 @@
           />
         </div>
         <div class="form-row">
-          <label class="lbl">Password</label>
-          <input
+          <label class="lbl">Password</label
+          ><input
             class="inp"
             type="password"
             id="adm-pwd"
@@ -1916,22 +1956,18 @@
       </div>
     </div>
 
-    <!-- ================================================================
-     ADMIN PANEL
-================================================================ -->
+    <!-- ================================================================ ADMIN PANEL -->
     <div id="s-admin" class="screen">
-      <!-- Topbar -->
       <div class="topbar">
         <div class="topbar-left">
           <button
             class="btn btn-icon mobile-menu-btn"
             onclick="openAdminSidebar()"
-            title="Menu"
           >
             ☰
           </button>
           <div>
-            <div class="topbar-title">IanTest Admin</div>
+            <div class="topbar-title">Simulasi Ujian Admin</div>
             <div class="topbar-sub" id="adm-topbar-sub">Dashboard</div>
           </div>
         </div>
@@ -1943,37 +1979,48 @@
           <button class="btn btn-sm" onclick="doAdminLogout()">Logout</button>
         </div>
       </div>
-
       <div class="admin-layout">
-        <!-- Sidebar -->
         <div class="sidebar" id="admin-sidebar">
           <div class="sidebar-logo">
-            <div class="sidebar-logo-text">IanTest</div>
+            <div class="sidebar-logo-text">Simulasi Ujian</div>
             <div class="sidebar-logo-sub">Admin Panel</div>
           </div>
-          <div class="sidebar-section">Menu</div>
+          <div class="sidebar-section">Menu Utama</div>
           <div class="sidebar-menu">
             <div
               class="smenu-item active"
               onclick="admNav('dashboard')"
               id="smenu-dashboard"
             >
-              <span class="smenu-icon">📊</span> Dashboard
-            </div>
-            <div class="smenu-item" onclick="admNav('token')" id="smenu-token">
-              <span class="smenu-icon">🎟️</span> Token Ujian
-              <span class="smenu-count" id="sc-token">0</span>
+              <span class="smenu-icon">📊</span>Dashboard
             </div>
             <div class="smenu-item" onclick="admNav('soal')" id="smenu-soal">
-              <span class="smenu-icon">📚</span> Bank Soal
-              <span class="smenu-count" id="sc-soal">0</span>
+              <span class="smenu-icon">📚</span>Bank Soal<span
+                class="smenu-count"
+                id="sc-soal"
+                >0</span
+              >
             </div>
             <div
               class="smenu-item"
               onclick="admNav('tambah')"
               id="smenu-tambah"
             >
-              <span class="smenu-icon">✏️</span> Tambah Soal
+              <span class="smenu-icon">✏️</span>Tambah Soal
+            </div>
+            <div
+              class="smenu-item"
+              onclick="admNav('import')"
+              id="smenu-import"
+            >
+              <span class="smenu-icon">📥</span>Import Excel/CSV
+            </div>
+            <div
+              class="smenu-item"
+              onclick="admNav('statistik')"
+              id="smenu-statistik"
+            >
+              <span class="smenu-icon">📉</span>Statistik
             </div>
           </div>
           <div class="sidebar-section">Peserta</div>
@@ -1983,12 +2030,18 @@
               onclick="admNav('responses')"
               id="smenu-responses"
             >
-              <span class="smenu-icon">📈</span> Respons &amp; Nilai
-              <span class="smenu-count" id="sc-resp">0</span>
+              <span class="smenu-icon">📈</span>Respons &amp; Nilai<span
+                class="smenu-count"
+                id="sc-resp"
+                >0</span
+              >
             </div>
             <div class="smenu-item" onclick="admNav('aktif')" id="smenu-aktif">
-              <span class="smenu-icon">🟢</span> Sedang Ujian
-              <span class="smenu-count" id="sc-aktif">0</span>
+              <span class="smenu-icon">🟢</span>Sedang Ujian<span
+                class="smenu-count"
+                id="sc-aktif"
+                >0</span
+              >
             </div>
           </div>
           <div class="sidebar-footer">
@@ -2002,16 +2055,13 @@
           </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="admin-main" id="admin-main">
-          <!-- DASHBOARD PAGE -->
+        <div class="admin-main">
+          <!-- DASHBOARD -->
           <div class="admin-page on" id="ap-dashboard">
             <div class="section-header">
               <div>
                 <div class="section-title">Dashboard</div>
-                <div class="section-sub">
-                  Ringkasan sistem ujian secara realtime
-                </div>
+                <div class="section-sub">Ringkasan sistem secara realtime</div>
               </div>
               <div class="live-badge">
                 <div class="rt-dot"></div>
@@ -2024,174 +2074,67 @@
                 <div class="stat-value" id="ds-soal">0</div>
                 <div class="stat-sub">Dalam bank soal</div>
               </div>
-              <div class="stat-card green">
-                <div class="stat-label">Token Aktif</div>
-                <div class="stat-value" id="ds-token-aktif">0</div>
-                <div class="stat-sub">Belum digunakan</div>
-              </div>
               <div class="stat-card warn">
                 <div class="stat-label">Sedang Ujian</div>
                 <div class="stat-value" id="ds-aktif">0</div>
                 <div class="stat-sub">Peserta online</div>
               </div>
-              <div class="stat-card purple">
+              <div class="stat-card green">
                 <div class="stat-label">Selesai Ujian</div>
                 <div class="stat-value" id="ds-selesai">0</div>
-                <div class="stat-sub">Peserta</div>
+                <div class="stat-sub">Total peserta</div>
               </div>
-              <div class="stat-card blue">
+              <div class="stat-card purple">
                 <div class="stat-label">Rata-rata Nilai</div>
                 <div class="stat-value" id="ds-avg">—</div>
-                <div class="stat-sub">Dari peserta selesai</div>
+                <div class="stat-sub">Semua peserta</div>
+              </div>
+              <div class="stat-card green">
+                <div class="stat-label">Nilai Tertinggi</div>
+                <div class="stat-value" id="ds-max">—</div>
+                <div class="stat-sub"></div>
               </div>
               <div class="stat-card red">
-                <div class="stat-label">Token Terpakai</div>
-                <div class="stat-value" id="ds-token-used">0</div>
-                <div class="stat-sub">Sudah digunakan</div>
+                <div class="stat-label">Nilai Terendah</div>
+                <div class="stat-value" id="ds-min">—</div>
+                <div class="stat-sub"></div>
               </div>
             </div>
             <div class="card">
-              <div class="card-title">5 Nilai Terakhir</div>
-              <div id="ds-recent-list">
-                <div class="empty-state" style="padding: 1.5rem">
-                  <div class="empty-icon">📭</div>
-                  <div class="empty-title">Belum ada peserta selesai</div>
-                </div>
-              </div>
+              <div class="card-title">5 Nilai Terbaru</div>
+              <div id="ds-recent"></div>
             </div>
           </div>
 
-          <!-- TOKEN PAGE -->
-          <div class="admin-page" id="ap-token">
-            <div class="section-header">
-              <div>
-                <div class="section-title">Token Ujian</div>
-                <div class="section-sub">
-                  Generate dan kelola token akses peserta
-                </div>
-              </div>
-            </div>
-            <div class="gen-form">
-              <div class="card-title" style="margin-bottom: 0.875rem">
-                Generate Token Baru
-              </div>
-              <div class="gen-form-row">
-                <div class="form-row" style="margin: 0">
-                  <label class="lbl">Jumlah Token</label>
-                  <input
-                    class="inp"
-                    type="number"
-                    id="tok-n"
-                    value="5"
-                    min="1"
-                    max="100"
-                    placeholder="5"
-                  />
-                </div>
-                <div class="form-row" style="margin: 0">
-                  <label class="lbl">Durasi (menit)</label>
-                  <input
-                    class="inp"
-                    type="number"
-                    id="tok-dur"
-                    value="90"
-                    min="5"
-                    max="300"
-                    placeholder="90"
-                  />
-                </div>
-                <div class="form-row" style="margin: 0">
-                  <label class="lbl">Nama Sesi</label>
-                  <input
-                    class="inp"
-                    type="text"
-                    id="tok-sesi"
-                    placeholder="cth: Test Sesi 1"
-                  />
-                </div>
-              </div>
-              <button class="btn btn-primary" onclick="genTokens()">
-                🎟️ Generate Token
-              </button>
-            </div>
-            <div class="section-header">
-              <div class="section-title">
-                Daftar Token
-                <span
-                  id="tok-count-label"
-                  class="badge badge-blue"
-                  style="margin-left: 6px"
-                  >0</span
-                >
-              </div>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap">
-                <button
-                  class="btn btn-sm"
-                  onclick="filterTokens('all')"
-                  id="filt-all"
-                >
-                  Semua
-                </button>
-                <button
-                  class="btn btn-sm"
-                  onclick="filterTokens('aktif')"
-                  id="filt-aktif"
-                >
-                  Tersedia
-                </button>
-                <button
-                  class="btn btn-sm"
-                  onclick="filterTokens('used')"
-                  id="filt-used"
-                >
-                  Terpakai
-                </button>
-                <button class="btn btn-sm btn-red" onclick="clearAllTokens()">
-                  Hapus Semua
-                </button>
-              </div>
-            </div>
-            <div class="token-grid" id="token-list">
-              <div class="empty-state">
-                <div class="empty-icon">🎟️</div>
-                <div class="empty-title">Belum ada token</div>
-                <div class="empty-sub">Generate token di atas</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- BANK SOAL PAGE -->
+          <!-- BANK SOAL -->
           <div class="admin-page" id="ap-soal">
             <div class="section-header">
               <div>
                 <div class="section-title">Bank Soal</div>
-                <div class="section-sub" id="soal-count-sub">
-                  0 soal tersimpan
-                </div>
+                <div class="section-sub" id="soal-count-lbl">0 soal</div>
               </div>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <div class="section-actions">
                 <input
                   class="inp"
                   type="text"
                   placeholder="Cari soal..."
-                  style="width: 180px"
+                  style="width: 160px"
                   oninput="filterSoal(this.value)"
                 />
-                <button class="btn btn-sm btn-red" onclick="clearAllSoal()">
+                <button class="btn btn-sm btn-red" onclick="confirmClearSoal()">
                   Hapus Semua
                 </button>
               </div>
             </div>
-            <div class="soal-list" id="soal-list">
+            <div class="soal-list-wrap" id="soal-list">
               <div class="empty-state">
                 <div class="empty-icon">📚</div>
                 <div class="empty-title">Belum ada soal</div>
-                <div class="empty-sub">Tambahkan soal di menu Tambah Soal</div>
               </div>
             </div>
           </div>
 
-          <!-- TAMBAH SOAL PAGE -->
+          <!-- TAMBAH SOAL -->
           <div class="admin-page" id="ap-tambah">
             <div class="section-header">
               <div>
@@ -2201,28 +2144,31 @@
             </div>
             <div class="card" style="max-width: 680px">
               <div class="form-row">
-                <label class="lbl">Teks Pertanyaan</label>
-                <textarea
+                <label class="lbl">Teks Pertanyaan</label
+                ><textarea
                   class="inp"
                   id="inp-q"
                   placeholder="Tulis pertanyaan di sini..."
                 ></textarea>
               </div>
               <div class="form-row">
-                <label class="lbl">Subtes / Kategori</label>
-                <input
+                <label class="lbl"
+                  >Subtes / Kategori
+                  <span style="font-weight: 400; color: var(--text3)"
+                    >(opsional)</span
+                  ></label
+                ><input
                   class="inp"
                   type="text"
                   id="inp-cat"
                   placeholder="cth: Literasi Bahasa, Penalaran Matematika..."
                   list="cat-dl"
-                />
-                <datalist id="cat-dl"></datalist>
+                /><datalist id="cat-dl"></datalist>
               </div>
               <div class="form-row">
                 <label class="lbl"
                   >Pilihan Jawaban
-                  <span style="color: var(--text3); font-weight: 400"
+                  <span style="font-weight: 400; color: var(--text3)"
                     >(● = jawaban benar)</span
                   ></label
                 >
@@ -2237,9 +2183,8 @@
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap">
                 <button class="btn btn-primary" onclick="saveQ()">
-                  💾 Simpan Soal
-                </button>
-                <button class="btn" onclick="resetQ()">Reset Form</button>
+                  💾 Simpan Soal</button
+                ><button class="btn" onclick="resetQ()">Reset</button>
               </div>
               <div
                 id="q-msg"
@@ -2248,24 +2193,177 @@
             </div>
           </div>
 
-          <!-- RESPONSES PAGE -->
+          <!-- IMPORT -->
+          <div class="admin-page" id="ap-import">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Import Soal</div>
+                <div class="section-sub">
+                  Upload file Excel (.xlsx) atau CSV sekaligus
+                </div>
+              </div>
+            </div>
+            <div class="card" style="max-width: 680px; margin-bottom: 1rem">
+              <div class="card-title">Format Kolom yang Dibutuhkan</div>
+              <div class="upload-template">
+                <div class="upload-template-title">Template Excel / CSV</div>
+                <table>
+                  <tr>
+                    <th>pertanyaan</th>
+                    <th>a</th>
+                    <th>b</th>
+                    <th>c</th>
+                    <th>d</th>
+                    <th>e</th>
+                    <th>jawaban</th>
+                    <th>kategori</th>
+                  </tr>
+                  <tr>
+                    <td>Soal 1?</td>
+                    <td>Opt A</td>
+                    <td>Opt B</td>
+                    <td>Opt C</td>
+                    <td>Opt D</td>
+                    <td>Opt E</td>
+                    <td>a</td>
+                    <td>Matematika</td>
+                  </tr>
+                  <tr>
+                    <td>Soal 2?</td>
+                    <td>Opt A</td>
+                    <td>Opt B</td>
+                    <td>Opt C</td>
+                    <td>Opt D</td>
+                    <td></td>
+                    <td>c</td>
+                    <td>IPA</td>
+                  </tr>
+                </table>
+                <div
+                  style="margin-top: 8px; font-size: 11px; color: var(--text3)"
+                >
+                  * Kolom <b>pertanyaan</b>, <b>a</b>, <b>b</b>, dan
+                  <b>jawaban</b> wajib diisi. Kolom c,d,e dan kategori opsional.
+                  Jawaban diisi huruf (a/b/c/d/e).
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  gap: 8px;
+                  margin-top: 1rem;
+                  flex-wrap: wrap;
+                "
+              >
+                <button
+                  class="btn btn-sm btn-cyan"
+                  onclick="downloadTemplate()"
+                >
+                  ⬇ Download Template Excel
+                </button>
+              </div>
+            </div>
+            <div class="card" style="max-width: 680px">
+              <div class="card-title">Upload File</div>
+              <div
+                class="upload-zone"
+                id="upload-zone"
+                ondragover="onDragOver(event)"
+                ondragleave="onDragLeave()"
+                ondrop="onDrop(event)"
+              >
+                <input
+                  type="file"
+                  id="file-input"
+                  accept=".xlsx,.xls,.csv"
+                  onchange="handleFileUpload(this.files[0])"
+                />
+                <div class="upload-icon">📂</div>
+                <div class="upload-title">
+                  Drag &amp; drop file di sini atau klik untuk pilih
+                </div>
+                <div class="upload-sub">
+                  Mendukung .xlsx, .xls, .csv · Tidak ada batas jumlah soal
+                </div>
+              </div>
+              <div id="import-progress" style="display: none; margin-top: 1rem">
+                <div
+                  style="
+                    font-size: 13px;
+                    color: var(--text2);
+                    margin-bottom: 6px;
+                  "
+                  id="import-prog-text"
+                >
+                  Memproses...
+                </div>
+                <div class="prog-bar-wrap">
+                  <div
+                    class="prog-bar"
+                    id="import-prog-bar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+              <div
+                id="import-result"
+                style="display: none; margin-top: 1rem"
+              ></div>
+            </div>
+          </div>
+
+          <!-- STATISTIK -->
+          <div class="admin-page" id="ap-statistik">
+            <div class="section-header">
+              <div>
+                <div class="section-title">Statistik Ujian</div>
+                <div class="section-sub">Analitik lengkap performa peserta</div>
+              </div>
+              <div class="section-actions">
+                <button class="btn btn-sm btn-cyan" onclick="exportNilai()">
+                  ⬇ Export Nilai (Excel)
+                </button>
+              </div>
+            </div>
+            <div class="stats-grid" id="stat-summary"></div>
+            <div class="chart-row">
+              <div class="chart-box">
+                <div class="chart-title">Distribusi Nilai</div>
+                <div id="chart-dist"></div>
+              </div>
+              <div class="chart-box">
+                <div class="chart-title">Rata-rata per Kategori</div>
+                <div id="chart-cat"></div>
+              </div>
+            </div>
+            <div class="chart-box" style="margin-bottom: 1rem">
+              <div class="chart-title">Performa per Soal (% Benar)</div>
+              <div id="chart-soal"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Leaderboard 🏆</div>
+              <div id="leaderboard"></div>
+            </div>
+          </div>
+
+          <!-- RESPONSES -->
           <div class="admin-page" id="ap-responses">
             <div class="section-header">
               <div>
-                <div class="section-title">Respons &amp; Nilai Peserta</div>
+                <div class="section-title">Respons &amp; Nilai</div>
                 <div class="section-sub">
                   Data lengkap hasil ujian semua peserta
                 </div>
               </div>
-              <div style="display: flex; gap: 8px; align-items: center">
+              <div class="section-actions">
                 <div class="live-badge">
                   <div class="rt-dot"></div>
                   Live
                 </div>
-                <button
-                  class="btn btn-sm btn-red"
-                  onclick="clearAllResponses()"
-                >
+                <button class="btn btn-sm btn-cyan" onclick="exportNilai()">
+                  ⬇ Export Excel
+                </button>
+                <button class="btn btn-sm btn-red" onclick="confirmClearResp()">
                   Hapus Data
                 </button>
               </div>
@@ -2275,13 +2373,12 @@
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Nama Peserta</th>
-                    <th>Token</th>
-                    <th>Sesi</th>
+                    <th>Nama</th>
                     <th>Nilai</th>
                     <th>Benar</th>
                     <th>Salah</th>
                     <th>Skip</th>
+                    <th>Total</th>
                     <th>Durasi</th>
                     <th>Selesai</th>
                   </tr>
@@ -2289,14 +2386,14 @@
                 <tbody id="resp-tbody">
                   <tr>
                     <td
-                      colspan="10"
+                      colspan="9"
                       style="
                         text-align: center;
                         padding: 2rem;
                         color: var(--text3);
                       "
                     >
-                      Belum ada data peserta
+                      Belum ada data
                     </td>
                   </tr>
                 </tbody>
@@ -2304,7 +2401,7 @@
             </div>
           </div>
 
-          <!-- AKTIF PAGE -->
+          <!-- AKTIF -->
           <div class="admin-page" id="ap-aktif">
             <div class="section-header">
               <div>
@@ -2320,58 +2417,127 @@
               <div class="empty-state">
                 <div class="empty-icon">🟢</div>
                 <div class="empty-title">Tidak ada peserta aktif</div>
-                <div class="empty-sub">
-                  Peserta yang sedang mengerjakan ujian akan tampil di sini
-                </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- end admin-main -->
       </div>
-      <!-- end admin-layout -->
     </div>
-    <!-- end s-admin -->
 
-    <!-- ================================================================
-     PESERTA LOGIN
-================================================================ -->
+    <!-- ================================================================ PESERTA LOGIN -->
     <div id="s-peserta-login" class="screen">
-      <div class="login-box" style="border-color: rgba(16, 185, 129, 0.15)">
+      <div
+        class="login-box"
+        style="border-color: rgba(16, 185, 129, 0.15); max-width: 480px"
+      >
         <div class="login-head">
           <div class="login-icon green">📝</div>
-          <div class="login-title">Masuk Ujian</div>
-          <div class="login-sub">
-            Masukkan nama dan token yang diberikan pengawas
-          </div>
+          <div class="login-title">Mulai Ujian</div>
+          <div class="login-sub">Isi data di bawah untuk memulai ujian</div>
         </div>
         <div class="form-row">
-          <label class="lbl">Nama Lengkap</label>
-          <input
+          <label class="lbl">Nama Lengkap</label
+          ><input
             class="inp"
             type="text"
             id="inp-nama"
             placeholder="Nama peserta"
           />
         </div>
-        <div class="form-row">
-          <label class="lbl">Token Ujian</label>
-          <input
-            class="inp"
-            type="text"
-            id="inp-token"
-            placeholder="Test-XXXXXX"
-            style="
-              font-family: var(--mono);
-              letter-spacing: 2px;
-              text-transform: uppercase;
-            "
-            oninput="this.value = this.value.toUpperCase()"
-            onkeydown="if (event.key === 'Enter') doLogin();"
-          />
+        <div class="settings-grid">
+          <div class="form-row" style="margin: 0">
+            <label class="lbl">Durasi (menit)</label
+            ><input
+              class="inp"
+              type="number"
+              id="inp-durasi"
+              value="90"
+              min="5"
+              max="300"
+            />
+          </div>
+          <div class="form-row" style="margin: 0">
+            <label class="lbl">Jumlah soal per siklus</label
+            ><input
+              class="inp"
+              type="number"
+              id="inp-jumlah"
+              value="50"
+              min="1"
+              max="2000"
+              placeholder="50"
+            />
+          </div>
         </div>
-        <div class="err-msg" id="login-err">
-          Token tidak valid, sudah digunakan, atau belum ada soal.
+        <div class="form-row" style="margin-top: 1rem">
+          <label class="lbl">Kategori soal</label>
+          <select class="inp" id="inp-kategori">
+            <option value="">Pilih Kategori</option>
+          </select>
+        </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: var(--bg3);
+            border-radius: var(--r);
+            border: 1px solid var(--border);
+          "
+        >
+          <input
+            type="checkbox"
+            id="chk-shuffle"
+            checked
+            style="
+              width: 16px;
+              height: 16px;
+              accent-color: var(--green);
+              cursor: pointer;
+              flex-shrink: 0;
+            "
+          />
+          <label
+            for="chk-shuffle"
+            style="font-size: 13px; color: var(--text2); cursor: pointer"
+            >Acak urutan soal (shuffle)</label
+          >
+        </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background: var(--bg3);
+            border-radius: var(--r);
+            border: 1px solid var(--border);
+          "
+        >
+          <input
+            type="checkbox"
+            id="chk-fullscreen"
+            checked
+            style="
+              width: 16px;
+              height: 16px;
+              accent-color: var(--accent);
+              cursor: pointer;
+              flex-shrink: 0;
+            "
+          />
+          <label
+            for="chk-fullscreen"
+            style="font-size: 13px; color: var(--text2); cursor: pointer"
+            >Mode fullscreen (anti-cheat)</label
+          >
+        </div>
+        <div class="err-msg" id="login-err">Masukkan nama lengkap kamu.</div>
+        <div class="err-msg" id="login-nosoal">
+          Belum ada soal. Hubungi admin.
         </div>
         <button
           class="btn btn-green"
@@ -2390,42 +2556,30 @@
       </div>
     </div>
 
-    <!-- ================================================================
-     UJIAN
-================================================================ -->
+    <!-- ================================================================ UJIAN -->
     <div id="s-ujian" class="screen">
-      <!-- Topbar -->
       <div class="ujian-topbar">
-        <div class="ujian-top-left">
+        <div
+          style="display: flex; align-items: center; gap: 10px; min-width: 0"
+        >
           <button
             class="btn btn-icon ujian-nav-toggle"
             onclick="openUjianSidebar()"
-            title="Nomor Soal"
           >
             ☰
           </button>
-          <div>
-            <div class="topbar-title" id="ujian-sesi-title">Ujian</div>
-            <div class="topbar-sub" id="ujian-peserta-sub">Peserta</div>
+          <div style="min-width: 0">
+            <div class="topbar-title" id="ujian-nama-title">Ujian</div>
+            <div class="topbar-sub" id="ujian-prog-sub">0 dari 0 dijawab</div>
           </div>
         </div>
-        <div class="ujian-top-right">
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              flex-direction: column;
-              align-items: flex-end;
-            "
-          >
+        <div
+          style="display: flex; align-items: center; gap: 12px; flex-shrink: 0"
+        >
+          <div style="text-align: right">
             <div class="timer-display" id="timer-disp">90:00</div>
-            <div class="timer-bar-outer" style="width: 120px">
-              <div
-                class="timer-bar-inner"
-                id="timer-bar"
-                style="width: 100%"
-              ></div>
+            <div class="timer-bar-outer" style="margin-top: 4px">
+              <div class="timer-bar-inner" id="timer-bar"></div>
             </div>
           </div>
           <button class="btn btn-sm btn-red" onclick="confirmFinish()">
@@ -2433,9 +2587,7 @@
           </button>
         </div>
       </div>
-
       <div class="ujian-layout">
-        <!-- Nomor Soal Sidebar -->
         <div class="ujian-sidebar" id="ujian-sidebar">
           <div class="ujian-sidebar-head">
             <div class="ujian-sidebar-title">Nomor Soal</div>
@@ -2446,7 +2598,7 @@
               </div>
               <div class="leg-item">
                 <div class="leg-dot ragu"></div>
-                Ragu-ragu
+                Ragu
               </div>
               <div class="leg-item">
                 <div class="leg-dot empty"></div>
@@ -2454,56 +2606,69 @@
               </div>
             </div>
           </div>
-          <div class="soal-grid" id="soal-nav-grid"></div>
+          <div class="soal-num-grid" id="soal-nav-grid"></div>
         </div>
-
-        <!-- Main Ujian -->
         <div class="ujian-main">
           <div class="ujian-q-area">
             <div class="ujian-q-meta">
-              <div>
-                <span class="ujian-q-num" id="q-num-label">Soal 1 dari 0</span>
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  flex-wrap: wrap;
+                "
+              >
                 <span
-                  class="badge badge-blue"
-                  id="q-cat-badge"
-                  style="margin-left: 8px"
-                ></span>
+                  style="
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: var(--text2);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  "
+                  id="q-num-lbl"
+                  >Soal 1</span
+                >
+                <span class="badge badge-blue" id="q-cat-badge"></span>
               </div>
-              <div class="progress-info" id="q-progress-info">0 dijawab</div>
+              <span
+                style="font-size: 12px; color: var(--text2)"
+                id="q-answered-info"
+                >0 dijawab</span
+              >
             </div>
             <div class="ujian-q-text" id="q-text">Memuat soal...</div>
             <div class="ujian-opts" id="ujian-opts"></div>
           </div>
-
-          <!-- Nav Bottom -->
           <div class="ujian-nav">
-            <button class="btn" id="btn-prev" onclick="prevQ()">
-              ← Sebelumnya
-            </button>
+            <button class="btn" id="btn-prev" onclick="prevQ()">← Prev</button>
             <div class="ujian-nav-center">
-              <button class="btn btn-warn" onclick="markRagu()" id="btn-ragu">
+              <button
+                class="btn btn-warn btn-sm"
+                id="btn-ragu"
+                onclick="markRagu()"
+              >
                 ⚠️ Ragu-ragu
               </button>
               <button
-                class="btn"
+                class="btn btn-sm"
+                id="btn-unragu"
                 onclick="clearRagu()"
-                id="btn-clear-ragu"
                 style="display: none"
               >
                 ✕ Hapus Ragu
               </button>
             </div>
             <button class="btn btn-primary" id="btn-next" onclick="nextQ()">
-              Berikutnya →
+              Next →
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ================================================================
-     RESULT
-================================================================ -->
+    <!-- ================================================================ RESULT -->
     <div id="s-result" class="screen">
       <div class="topbar">
         <div class="topbar-left">
@@ -2512,15 +2677,19 @@
             <div class="topbar-sub">Ujian telah selesai</div>
           </div>
         </div>
-        <button class="btn" onclick="show('s-home')">Selesai</button>
+        <div style="display: flex; gap: 8px">
+          <button class="btn btn-sm btn-cyan" onclick="exportHasilSaya()">
+            ⬇ Export Nilai
+          </button>
+          <button class="btn" onclick="show('s-home')">Selesai</button>
+        </div>
       </div>
-
       <div class="result-hero">
         <div class="result-score-ring">
           <div class="result-score-val" id="res-score">0</div>
         </div>
-        <div class="result-name" id="res-name">Peserta</div>
-        <div class="result-token" id="res-token-disp">TOKEN</div>
+        <div class="result-name" id="res-nama">Peserta</div>
+        <div class="result-sub" id="res-sub">Ujian Latihan</div>
         <div class="result-stats">
           <div class="result-stat">
             <div
@@ -2548,9 +2717,18 @@
             </div>
             <div class="result-stat-lbl">Dilewati</div>
           </div>
+          <div class="result-stat">
+            <div
+              class="result-stat-val"
+              id="r-durasi"
+              style="color: var(--cyan)"
+            >
+              0m
+            </div>
+            <div class="result-stat-lbl">Durasi</div>
+          </div>
         </div>
       </div>
-
       <div class="review-wrap">
         <div
           style="
@@ -2558,7 +2736,6 @@
             font-weight: 700;
             color: var(--text);
             margin-bottom: 1rem;
-            padding: 0 0.25rem;
           "
         >
           📋 Pembahasan Jawaban
@@ -2568,63 +2745,46 @@
     </div>
 
     <script>
-      // ================================================================
-      // DATABASE (localStorage JSON)
-      // ================================================================
-      const ADMIN_USR = "admin";
-      const ADMIN_PWD = "sitepu2209";
-      const DB_KEY_Q = "IanTest_questions";
-      const DB_KEY_T = "IanTest_tokens";
-      const DB_KEY_R = "IanTest_responses";
-      const DB_KEY_A = "IanTest_aktif";
-
-      function dbGet(key, def = []) {
+      // ============================================================
+      // DATABASE
+      // ============================================================
+      const K_Q = "Simulasi Ujian_q",
+        K_R = "Simulasi Ujian_r",
+        K_A = "Simulasi Ujian_a";
+      const dbGet = (k, d = []) => {
         try {
-          return JSON.parse(localStorage.getItem(key)) || def;
+          return JSON.parse(localStorage.getItem(k)) ?? d;
         } catch (e) {
-          return def;
+          return d;
         }
-      }
-      function dbSet(key, val) {
+      };
+      const dbSet = (k, v) => {
         try {
-          localStorage.setItem(key, JSON.stringify(val));
+          localStorage.setItem(k, JSON.stringify(v));
         } catch (e) {}
-      }
+      };
+      const getQ = () => dbGet(K_Q, []);
+      const getR = () => dbGet(K_R, []);
+      const getA = () => dbGet(K_A, []);
+      const setQ = (v) => dbSet(K_Q, v);
+      const setR = (v) => dbSet(K_R, v);
+      const setA = (v) => dbSet(K_A, v);
 
-      function getQ() {
-        return dbGet(DB_KEY_Q, []);
-      }
-      function getT() {
-        return dbGet(DB_KEY_T, []);
-      }
-      function getR() {
-        return dbGet(DB_KEY_R, []);
-      }
-      function getA() {
-        return dbGet(DB_KEY_A, []);
-      }
-      function setQ(v) {
-        dbSet(DB_KEY_Q, v);
-      }
-      function setT(v) {
-        dbSet(DB_KEY_T, v);
-      }
-      function setR(v) {
-        dbSet(DB_KEY_R, v);
-      }
-      function setA(v) {
-        dbSet(DB_KEY_A, v);
-      }
+      const ADMIN_USR = "admin",
+        ADMIN_PWD = "sitepu2209";
+      let optIdx = 0,
+        ujianState = null,
+        timerInt = null,
+        adminInt = null,
+        soalFilter = "";
+      let fsViolations = 0,
+        fsCountdownInt = null,
+        fsEnabled = false;
+      let lastResult = null;
 
-      // ================================================================
+      // ============================================================
       // UTILS
-      // ================================================================
-      let optIdx = 0;
-      let ujianState = null;
-      let timerInt = null;
-      let adminRefreshInt = null;
-      let _toastTimer = {};
-
+      // ============================================================
       function show(id) {
         document
           .querySelectorAll(".screen")
@@ -2632,25 +2792,47 @@
         document.getElementById(id).classList.add("on");
         closeSidebar();
       }
+      const fmtTime = (s) =>
+        `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+      const fmtDate = (ts) =>
+        ts
+          ? new Date(ts).toLocaleString("id-ID", {
+              day: "2-digit",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "—";
 
-      function toast(msg, type = "info", duration = 3000) {
-        const wrap = document.getElementById("toast-wrap");
+      function toast(msg, type = "info") {
+        const w = document.getElementById("toast-wrap");
         const el = document.createElement("div");
         el.className = `toast ${type}`;
-        const icon = type === "success" ? "✓" : type === "error" ? "✕" : "ℹ";
-        el.innerHTML = `<span style="font-weight:700;color:${type === "success" ? "var(--green)" : type === "error" ? "var(--red)" : "var(--accent)"}">${icon}</span> ${msg}`;
-        wrap.appendChild(el);
-        setTimeout(() => el.remove(), duration);
+        const ico =
+          { success: "✓", error: "✕", info: "ℹ", warn: "⚠" }[type] || "ℹ";
+        const col = {
+          success: "var(--green)",
+          error: "var(--red)",
+          info: "var(--accent)",
+          warn: "var(--warn)",
+        }[type];
+        el.innerHTML = `<span style="font-weight:800;color:${col}">${ico}</span> ${msg}`;
+        w.appendChild(el);
+        setTimeout(() => {
+          el.style.opacity = "0";
+          el.style.transition = "opacity .3s";
+        }, 2700);
+        setTimeout(() => el.remove(), 3000);
       }
 
-      function openModal(title, body, onConfirm, danger = true) {
+      function openModal(title, body, onOk, danger = true) {
         document.getElementById("modal-title").textContent = title;
         document.getElementById("modal-body").textContent = body;
-        const btn = document.getElementById("modal-confirm-btn");
+        const btn = document.getElementById("modal-ok-btn");
         btn.className = `btn ${danger ? "btn-red" : "btn-primary"}`;
         btn.onclick = () => {
           closeModal();
-          onConfirm();
+          onOk();
         };
         document.getElementById("modal").classList.add("on");
       }
@@ -2672,33 +2854,9 @@
         document.getElementById("sidebar-overlay").classList.remove("on");
       }
 
-      function genTokenCode() {
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        let k = "";
-        for (let i = 0; i < 6; i++)
-          k += chars[Math.floor(Math.random() * chars.length)];
-        return "Test-" + k;
-      }
-
-      function fmtTime(sec) {
-        const m = Math.floor(sec / 60);
-        const s = sec % 60;
-        return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-      }
-
-      function fmtDate(ts) {
-        if (!ts) return "—";
-        return new Date(ts).toLocaleString("id-ID", {
-          day: "2-digit",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-      }
-
-      // ================================================================
+      // ============================================================
       // HOME
-      // ================================================================
+      // ============================================================
       function goAdminLogin() {
         document.getElementById("adm-usr").value = "";
         document.getElementById("adm-pwd").value = "";
@@ -2708,22 +2866,35 @@
       }
       function goPesertaLogin() {
         document.getElementById("inp-nama").value = "";
-        document.getElementById("inp-token").value = "";
+        document.getElementById("inp-durasi").value = "90";
+        document.getElementById("inp-jumlah").value = "50";
         document.getElementById("login-err").style.display = "none";
+        document.getElementById("login-nosoal").style.display = "none";
+        // populate kategori
+        const cats = [
+          ...new Set(
+            getQ()
+              .map((q) => q.cat)
+              .filter(Boolean),
+          ),
+        ];
+        const sel = document.getElementById("inp-kategori");
+        sel.innerHTML =
+          '<option value="">Pilih Kategori</option>' +
+          cats.map((c) => `<option value="${c}">${c}</option>`).join("");
         show("s-peserta-login");
       }
 
-      // ================================================================
-      // ADMIN AUTH
-      // ================================================================
+      // ============================================================
+      // ADMIN
+      // ============================================================
       function doAdminLogin() {
-        const u = document.getElementById("adm-usr").value.trim();
-        const p = document.getElementById("adm-pwd").value;
+        const u = document.getElementById("adm-usr").value.trim(),
+          p = document.getElementById("adm-pwd").value;
         if (u === ADMIN_USR && p === ADMIN_PWD) {
-          document.getElementById("adm-err").style.display = "none";
           show("s-admin");
-          startAdminRefresh();
           admNav("dashboard");
+          startAdminRefresh();
           toast("Selamat datang, Admin!", "success");
         } else {
           document.getElementById("adm-err").style.display = "block";
@@ -2736,227 +2907,105 @@
         show("s-home");
       }
 
-      // ================================================================
-      // ADMIN NAVIGATION
-      // ================================================================
       function admNav(page) {
         document
           .querySelectorAll(".smenu-item")
           .forEach((el) => el.classList.remove("active"));
-        document.getElementById("smenu-" + page).classList.add("active");
+        document.getElementById("smenu-" + page)?.classList.add("active");
         document
           .querySelectorAll(".admin-page")
           .forEach((el) => el.classList.remove("on"));
         document.getElementById("ap-" + page).classList.add("on");
+        const labels = {
+          dashboard: "Dashboard",
+          soal: "Bank Soal",
+          tambah: "Tambah Soal",
+          import: "Import Excel/CSV",
+          statistik: "Statistik",
+          responses: "Respons Peserta",
+          aktif: "Peserta Aktif",
+        };
         document.getElementById("adm-topbar-sub").textContent =
-          {
-            dashboard: "Dashboard",
-            token: "Token Ujian",
-            soal: "Bank Soal",
-            tambah: "Tambah Soal",
-            responses: "Respons Peserta",
-            aktif: "Peserta Aktif",
-          }[page] || page;
-        refreshAdminPage(page);
+          labels[page] || page;
+        renderAdminPage(page);
         closeSidebar();
       }
-
-      function refreshAdminPage(page) {
+      function renderAdminPage(page) {
         if (page === "dashboard") renderDashboard();
-        else if (page === "token") renderTokenList();
-        else if (page === "soal") renderSoalList();
-        else if (page === "tambah") refreshCatDl();
-        else if (page === "responses") renderResponses();
-        else if (page === "aktif") renderAktif();
+        if (page === "soal") renderSoalList();
+        if (page === "tambah") refreshCatDl();
+        if (page === "responses") renderResponses();
+        if (page === "aktif") renderAktif();
+        if (page === "statistik") renderStatistik();
         updateSidebarCounts();
       }
-
       function startAdminRefresh() {
         stopAdminRefresh();
-        adminRefreshInt = setInterval(() => {
-          const activePage = document
+        adminInt = setInterval(() => {
+          const p = document
             .querySelector(".admin-page.on")
             ?.id?.replace("ap-", "");
-          if (activePage) refreshAdminPage(activePage);
+          if (p) renderAdminPage(p);
         }, 3000);
       }
       function stopAdminRefresh() {
-        if (adminRefreshInt) {
-          clearInterval(adminRefreshInt);
-          adminRefreshInt = null;
+        if (adminInt) {
+          clearInterval(adminInt);
+          adminInt = null;
         }
       }
-
       function updateSidebarCounts() {
-        const q = getQ();
-        const t = getT();
-        const r = getR();
-        const a = getA();
-        document.getElementById("sc-soal").textContent = q.length;
-        document.getElementById("sc-token").textContent = t.length;
-        document.getElementById("sc-resp").textContent = r.length;
-        document.getElementById("sc-aktif").textContent = a.length;
+        document.getElementById("sc-soal").textContent = getQ().length;
+        document.getElementById("sc-resp").textContent = getR().length;
+        document.getElementById("sc-aktif").textContent = getA().length;
       }
 
-      // ================================================================
+      // ============================================================
       // DASHBOARD
-      // ================================================================
+      // ============================================================
       function renderDashboard() {
         const q = getQ(),
-          t = getT(),
           r = getR(),
           a = getA();
-        const tokAktif = t.filter((x) => !x.used).length;
-        const tokUsed = t.filter((x) => x.used).length;
-        const avg = r.length
-          ? Math.round(r.reduce((s, x) => s + x.nilai, 0) / r.length)
+        const vals = r.map((x) => x.nilai);
+        const avg = vals.length
+          ? Math.round(vals.reduce((s, v) => s + v, 0) / vals.length)
           : null;
-
+        const max = vals.length ? Math.max(...vals) : null,
+          min = vals.length ? Math.min(...vals) : null;
         document.getElementById("ds-soal").textContent = q.length;
-        document.getElementById("ds-token-aktif").textContent = tokAktif;
         document.getElementById("ds-aktif").textContent = a.length;
         document.getElementById("ds-selesai").textContent = r.length;
         document.getElementById("ds-avg").textContent =
           avg !== null ? avg : "—";
-        document.getElementById("ds-token-used").textContent = tokUsed;
+        document.getElementById("ds-max").textContent =
+          max !== null ? max : "—";
+        document.getElementById("ds-min").textContent =
+          min !== null ? min : "—";
         updateSidebarCounts();
-
-        // Recent
-        const recentEl = document.getElementById("ds-recent-list");
         const recent = [...r].reverse().slice(0, 5);
+        const el = document.getElementById("ds-recent");
         if (!recent.length) {
-          recentEl.innerHTML =
+          el.innerHTML =
             '<div class="empty-state" style="padding:1.5rem"><div class="empty-icon">📭</div><div class="empty-title">Belum ada peserta selesai</div></div>';
           return;
         }
-        recentEl.innerHTML = recent
+        el.innerHTML = recent
           .map(
-            (x) => `
-    <div style="display:flex;align-items:center;gap:12px;padding:.75rem 0;border-bottom:1px solid var(--border)">
-      <div style="width:36px;height:36px;border-radius:9px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0">${x.nilai}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.nama}</div>
-        <div style="font-size:11px;color:var(--text2)">${x.token} · ${fmtDate(x.selesaiAt)}</div>
-      </div>
-      <span class="badge ${x.nilai >= 70 ? "badge-green" : x.nilai >= 50 ? "badge-warn" : "badge-red"}">${x.nilai}</span>
-    </div>`,
+            (
+              x,
+            ) => `<div style="display:flex;align-items:center;gap:12px;padding:.75rem 0;border-bottom:1px solid var(--border)">
+    <div style="width:38px;height:38px;border-radius:9px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--accent);flex-shrink:0;font-family:var(--mono)">${x.nilai}</div>
+    <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.nama}</div><div style="font-size:11px;color:var(--text2)">${fmtDate(x.selesaiAt)} · ${x.benar}/${x.total} benar</div></div>
+    <span class="badge ${x.nilai >= 70 ? "badge-green" : x.nilai >= 50 ? "badge-warn" : "badge-red"}">${x.nilai}</span>
+  </div>`,
           )
           .join("");
       }
 
-      // ================================================================
-      // TOKEN
-      // ================================================================
-      let tokFilter = "all";
-      function filterTokens(f) {
-        tokFilter = f;
-        ["all", "aktif", "used"].forEach((k) => {
-          const el = document.getElementById("filt-" + k);
-          if (el) el.style.background = k === f ? "var(--accent)" : "";
-          if (el) el.style.color = k === f ? "#fff" : "";
-          if (el) el.style.borderColor = k === f ? "var(--accent)" : "";
-        });
-        renderTokenList();
-      }
-
-      function genTokens() {
-        const n = Math.min(
-          100,
-          Math.max(1, parseInt(document.getElementById("tok-n").value) || 5),
-        );
-        const dur = Math.min(
-          300,
-          Math.max(5, parseInt(document.getElementById("tok-dur").value) || 90),
-        );
-        const sesi =
-          document.getElementById("tok-sesi").value.trim() || "Ujian Test";
-        let tokens = getT();
-        const existing = new Set(tokens.map((t) => t.code));
-        for (let i = 0; i < n; i++) {
-          let code = genTokenCode();
-          while (existing.has(code)) code = genTokenCode();
-          existing.add(code);
-          tokens.push({
-            code,
-            dur,
-            sesi,
-            used: false,
-            usedBy: "",
-            usedAt: null,
-            createdAt: Date.now(),
-          });
-        }
-        setT(tokens);
-        renderTokenList();
-        updateSidebarCounts();
-        toast(`${n} token berhasil digenerate!`, "success");
-      }
-
-      function renderTokenList() {
-        const tokens = getT();
-        const filtered =
-          tokFilter === "aktif"
-            ? tokens.filter((t) => !t.used)
-            : tokFilter === "used"
-              ? tokens.filter((t) => t.used)
-              : tokens;
-        document.getElementById("tok-count-label").textContent =
-          filtered.length;
-        const el = document.getElementById("token-list");
-        if (!filtered.length) {
-          el.innerHTML =
-            '<div class="empty-state"><div class="empty-icon">🎟️</div><div class="empty-title">Tidak ada token</div></div>';
-          return;
-        }
-        el.innerHTML = [...filtered]
-          .reverse()
-          .map((t) => {
-            const origIdx = tokens.findIndex((x) => x.code === t.code);
-            return `<div class="token-item">
-      <div class="token-code">${t.code}</div>
-      <div class="token-info">
-        <div class="token-session">${t.sesi}</div>
-        <div class="token-meta">${t.dur} menit · Dibuat ${fmtDate(t.createdAt)}${t.used ? ` · Dipakai: ${t.usedBy} (${fmtDate(t.usedAt)})` : ""}  </div>
-      </div>
-      <div class="token-actions">
-        <span class="badge ${t.used ? "badge-red" : "badge-green"}">${t.used ? "Terpakai" : "Tersedia"}</span>
-        <button class="btn btn-sm btn-red" onclick="delToken(${origIdx})">Hapus</button>
-      </div>
-    </div>`;
-          })
-          .join("");
-      }
-
-      function delToken(i) {
-        openModal(
-          "Hapus Token",
-          "Hapus token ini? Tindakan tidak bisa dibatalkan.",
-          () => {
-            const t = getT();
-            t.splice(i, 1);
-            setT(t);
-            renderTokenList();
-            updateSidebarCounts();
-            toast("Token dihapus.", "info");
-          },
-        );
-      }
-      function clearAllTokens() {
-        openModal(
-          "Hapus Semua Token",
-          "Hapus semua token? Data tidak bisa dikembalikan.",
-          () => {
-            setT([]);
-            renderTokenList();
-            updateSidebarCounts();
-            toast("Semua token dihapus.", "info");
-          },
-        );
-      }
-
-      // ================================================================
-      // SOAL
-      // ================================================================
+      // ============================================================
+      // BANK SOAL
+      // ============================================================
       function refreshCatDl() {
         const cats = [
           ...new Set(
@@ -2969,67 +3018,107 @@
         if (dl)
           dl.innerHTML = cats.map((c) => `<option value="${c}">`).join("");
       }
-
-      function addOpt() {
-        const c = document.getElementById("opts-in");
-        const i = optIdx++;
-        const n = c.children.length;
-        const d = document.createElement("div");
-        d.className = "ans-row";
-        d.id = "or-" + i;
-        d.innerHTML = `<div class="ans-letter">${String.fromCharCode(65 + n)}</div>
-    <input class="inp" type="text" id="ov-${i}" placeholder="Pilihan ${String.fromCharCode(65 + n)}">
-    <input type="radio" name="correct" value="${i}" class="radio-correct" title="Jawaban benar">`;
-        c.appendChild(d);
+      function filterSoal(q) {
+        soalFilter = q.toLowerCase();
+        renderSoalList();
       }
-      function relabelOpts() {
-        document.querySelectorAll("#opts-in .ans-row").forEach((r, i) => {
-          r.querySelector(".ans-letter").textContent = String.fromCharCode(
-            65 + i,
-          );
-          r.querySelector("input[type=text]").placeholder =
-            "Pilihan " + String.fromCharCode(65 + i);
+      function renderSoalList() {
+        const qs = getQ();
+        const f = soalFilter
+          ? qs.filter(
+              (q) =>
+                q.text.toLowerCase().includes(soalFilter) ||
+                (q.cat || "").toLowerCase().includes(soalFilter),
+            )
+          : qs;
+        document.getElementById("soal-count-lbl").textContent =
+          `${f.length} soal${soalFilter ? " (filter aktif)" : ""}`;
+        const el = document.getElementById("soal-list");
+        if (!f.length) {
+          el.innerHTML =
+            '<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-title">Tidak ada soal</div></div>';
+          return;
+        }
+        el.innerHTML = f
+          .map((q, fi) => {
+            const origIdx = qs.indexOf(q);
+            return `<div class="soal-item" style="animation:fadeUp .2s ease ${fi * 0.025}s both">
+      <div class="soal-num">Soal ${origIdx + 1} &nbsp;·&nbsp; ${fmtDate(q.createdAt)}</div>
+      <div class="soal-text">${q.text}</div>
+      <div class="soal-opts-row">${q.options.map((op, oi) => `<span class="soal-opt-chip${oi === q.answer ? " correct" : ""}">${String.fromCharCode(65 + oi)}. ${op}</span>`).join("")}</div>
+      <div class="soal-footer">${q.cat ? `<span class="badge badge-blue">${q.cat}</span>` : "<span></span>"}<button class="btn btn-sm btn-red" onclick="confirmDelSoal(${origIdx})">Hapus</button></div>
+    </div>`;
+          })
+          .join("");
+      }
+      function confirmDelSoal(i) {
+        openModal("Hapus Soal", "Hapus soal ini dari bank soal?", () => {
+          const q = getQ();
+          q.splice(i, 1);
+          setQ(q);
+          renderSoalList();
+          updateSidebarCounts();
+          toast("Soal dihapus.", "info");
         });
       }
+      function confirmClearSoal() {
+        openModal(
+          "Hapus Semua Soal",
+          "Hapus semua soal? Tidak bisa dibatalkan.",
+          () => {
+            setQ([]);
+            renderSoalList();
+            updateSidebarCounts();
+            toast("Semua soal dihapus.", "info");
+          },
+        );
+      }
 
+      // ============================================================
+      // TAMBAH SOAL
+      // ============================================================
+      function addOpt() {
+        const c = document.getElementById("opts-in");
+        const i = optIdx++,
+          n = c.children.length;
+        const d = document.createElement("div");
+        d.className = "ans-row";
+        d.innerHTML = `<div class="ans-letter">${String.fromCharCode(65 + n)}</div><input class="inp" type="text" id="ov-${i}" placeholder="Pilihan ${String.fromCharCode(65 + n)}"><input type="radio" name="correct" value="${i}" class="radio-correct" title="Jawaban benar">`;
+        c.appendChild(d);
+      }
       function resetQ() {
         document.getElementById("inp-q").value = "";
         document.getElementById("inp-cat").value = "";
         document.getElementById("opts-in").innerHTML = "";
-        optIdx = 0;
         document.getElementById("q-msg").style.display = "none";
+        optIdx = 0;
         addOpt();
         addOpt();
         addOpt();
         addOpt();
       }
-
       function saveQ() {
-        const text = document.getElementById("inp-q").value.trim();
-        const cat = document.getElementById("inp-cat").value.trim();
-        const msg = document.getElementById("q-msg");
+        const text = document.getElementById("inp-q").value.trim(),
+          cat = document.getElementById("inp-cat").value.trim();
         if (!text) {
-          msg.textContent = "Pertanyaan tidak boleh kosong.";
-          msg.style.cssText = "display:block;color:var(--red)";
+          showQMsg("Pertanyaan tidak boleh kosong.", false);
           return;
         }
         const rows = document.querySelectorAll("#opts-in .ans-row");
         const opts = [];
         let ans = -1;
-        rows.forEach((r, i) => {
+        rows.forEach((r) => {
           const v = r.querySelector("input[type=text]").value.trim();
-          if (v) opts.push(v);
           const rad = r.querySelector("input[type=radio]");
+          if (v) opts.push(v);
           if (rad && rad.checked) ans = opts.length - 1;
         });
         if (opts.length < 2) {
-          msg.textContent = "Minimal 2 pilihan jawaban.";
-          msg.style.cssText = "display:block;color:var(--red)";
+          showQMsg("Minimal 2 pilihan.", false);
           return;
         }
         if (ans < 0) {
-          msg.textContent = "Centang salah satu jawaban benar.";
-          msg.style.cssText = "display:block;color:var(--red)";
+          showQMsg("Centang jawaban benar.", false);
           return;
         }
         const q = getQ();
@@ -3044,242 +3133,744 @@
         setQ(q);
         refreshCatDl();
         updateSidebarCounts();
-        msg.textContent = "✓ Soal berhasil disimpan!";
-        msg.style.cssText = "display:block;color:var(--green)";
+        showQMsg("✓ Soal disimpan!", true);
         toast("Soal disimpan!", "success");
         setTimeout(() => {
-          msg.style.display = "none";
+          document.getElementById("q-msg").style.display = "none";
           resetQ();
         }, 1500);
       }
-
-      let soalFilterQuery = "";
-      function filterSoal(q) {
-        soalFilterQuery = q.toLowerCase();
-        renderSoalList();
+      function showQMsg(t, ok) {
+        const el = document.getElementById("q-msg");
+        el.textContent = t;
+        el.style.cssText = `display:block;color:${ok ? "var(--green)" : "var(--red)"}`;
       }
 
-      function renderSoalList() {
-        const qs = getQ();
-        const filtered = soalFilterQuery
-          ? qs.filter(
-              (q) =>
-                q.text.toLowerCase().includes(soalFilterQuery) ||
-                (q.cat || "").toLowerCase().includes(soalFilterQuery),
-            )
-          : qs;
-        document.getElementById("soal-count-sub").textContent =
-          `${filtered.length} soal ditampilkan${soalFilterQuery ? " (filter aktif)" : ""}`;
-        const el = document.getElementById("soal-list");
-        if (!filtered.length) {
-          el.innerHTML =
-            '<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-title">Tidak ada soal</div></div>';
+      // ============================================================
+      // IMPORT EXCEL/CSV
+      // ============================================================
+      function onDragOver(e) {
+        e.preventDefault();
+        document.getElementById("upload-zone").classList.add("drag");
+      }
+      function onDragLeave() {
+        document.getElementById("upload-zone").classList.remove("drag");
+      }
+      function onDrop(e) {
+        e.preventDefault();
+        onDragLeave();
+        const f = e.dataTransfer.files[0];
+        if (f) handleFileUpload(f);
+      }
+
+      function handleFileUpload(file) {
+        if (!file) return;
+        const ext = file.name.split(".").pop().toLowerCase();
+        if (!["xlsx", "xls", "csv"].includes(ext)) {
+          toast("Format tidak didukung. Gunakan .xlsx atau .csv", "error");
           return;
         }
-        el.innerHTML = filtered
-          .map((q, fi) => {
-            const origIdx = qs.indexOf(q);
-            return `<div class="soal-item" style="animation:fadeUp .2s ease ${fi * 0.03}s both">
-      <div class="soal-num">Soal ${origIdx + 1} · ${fmtDate(q.createdAt)}</div>
-      <div class="soal-text">${q.text}</div>
-      <div class="soal-opts">
-        ${q.options.map((op, oi) => `<span class="soal-opt${oi === q.answer ? " correct" : ""}">${String.fromCharCode(65 + oi)}. ${op}</span>`).join("")}
-      </div>
-      <div class="soal-footer">
-        ${q.cat ? `<span class="badge badge-blue">${q.cat}</span>` : "<span></span>"}
-        <button class="btn btn-sm btn-red" onclick="delSoal(${origIdx})">Hapus</button>
-      </div>
+        const progWrap = document.getElementById("import-progress");
+        const progBar = document.getElementById("import-prog-bar");
+        const progText = document.getElementById("import-prog-text");
+        const resultEl = document.getElementById("import-result");
+        progWrap.style.display = "block";
+        resultEl.style.display = "none";
+        progText.textContent = "Membaca file...";
+        progBar.style.width = "20%";
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            progBar.style.width = "50%";
+            progText.textContent = "Memproses data...";
+            let rows = [];
+            if (ext === "csv") {
+              rows = parseCSV(e.target.result);
+            } else {
+              const wb = XLSX.read(e.target.result, { type: "array" });
+              const ws = wb.Sheets[wb.SheetNames[0]];
+              rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
+            }
+            progBar.style.width = "75%";
+            progText.textContent = "Menyimpan soal...";
+            const result = processImportRows(rows);
+            progBar.style.width = "100%";
+            progText.textContent = "Selesai!";
+            setTimeout(() => {
+              progWrap.style.display = "none";
+            }, 1000);
+            resultEl.style.display = "block";
+            resultEl.innerHTML = `<div style="padding:1rem;background:${result.errors ? "var(--warn-light)" : "var(--green-light)"};border:1px solid ${result.errors ? "rgba(245,158,11,.3)" : "rgba(16,185,129,.3)"};border-radius:var(--r)">
+        <div style="font-size:14px;font-weight:700;color:${result.errors ? "var(--warn)" : "var(--green)"};margin-bottom:6px">${result.errors ? "⚠" : "✓"} Import ${result.errors ? "dengan peringatan" : "berhasil!"}</div>
+        <div style="font-size:13px;color:var(--text2)">✓ ${result.ok} soal berhasil diimpor${result.errors ? " · ⚠ " + result.errors + " baris dilewati" : ""}</div>
+      </div>`;
+            updateSidebarCounts();
+            renderDashboard();
+            toast(`${result.ok} soal berhasil diimpor!','success`);
+            document.getElementById("file-input").value = "";
+          } catch (err) {
+            progWrap.style.display = "none";
+            resultEl.style.display = "block";
+            resultEl.innerHTML = `<div style="padding:1rem;background:var(--red-light);border:1px solid rgba(239,68,68,.3);border-radius:var(--r);font-size:13px;color:var(--red)">✕ Error: ${err.message}</div>`;
+            toast("Gagal mengimpor file.", "error");
+          }
+        };
+        if (ext === "csv") reader.readAsText(file, "UTF-8");
+        else reader.readAsArrayBuffer(file);
+      }
+
+      function parseCSV(text) {
+        const lines = text.split("\n").filter((l) => l.trim());
+        if (!lines.length) return [];
+        const headers = lines[0]
+          .split(",")
+          .map((h) => h.trim().replace(/^"|"$/g, "").toLowerCase());
+        return lines.slice(1).map((line) => {
+          const vals = [];
+          let cur = "",
+            inQ = false;
+          for (let i = 0; i < line.length; i++) {
+            if (line[i] === '"') inQ = !inQ;
+            else if (line[i] === "," && !inQ) {
+              vals.push(cur.trim());
+              cur = "";
+            } else cur += line[i];
+          }
+          vals.push(cur.trim());
+          const row = {};
+          headers.forEach(
+            (h, i) => (row[h] = (vals[i] || "").replace(/^"|"$/g, "")),
+          );
+          return row;
+        });
+      }
+
+      function processImportRows(rows) {
+        if (!rows.length)
+          throw new Error("File kosong atau tidak bisa dibaca.");
+        const firstRow = rows[0];
+        const keys = Object.keys(firstRow).map((k) => k.toLowerCase().trim());
+        // find column aliases
+        const findCol = (aliases) => aliases.find((a) => keys.includes(a));
+        const qCol = findCol([
+          "pertanyaan",
+          "soal",
+          "question",
+          "teks",
+          "text",
+          "q",
+        ]);
+        const aCol = findCol([
+          "a",
+          "opsi_a",
+          "pilihan_a",
+          "option_a",
+          "jawaban_a",
+        ]);
+        const bCol = findCol([
+          "b",
+          "opsi_b",
+          "pilihan_b",
+          "option_b",
+          "jawaban_b",
+        ]);
+        const cCol = findCol([
+          "c",
+          "opsi_c",
+          "pilihan_c",
+          "option_c",
+          "jawaban_c",
+        ]);
+        const dCol = findCol([
+          "d",
+          "opsi_d",
+          "pilihan_d",
+          "option_d",
+          "jawaban_d",
+        ]);
+        const eCol = findCol([
+          "e",
+          "opsi_e",
+          "pilihan_e",
+          "option_e",
+          "jawaban_e",
+        ]);
+        const ansCol = findCol([
+          "jawaban",
+          "kunci",
+          "answer",
+          "correct",
+          "kunci_jawaban",
+        ]);
+        const catCol = findCol([
+          "kategori",
+          "subtes",
+          "category",
+          "subject",
+          "mapel",
+          "pelajaran",
+        ]);
+        if (!qCol)
+          throw new Error(
+            'Kolom "pertanyaan" tidak ditemukan. Pastikan header sesuai template.',
+          );
+        if (!ansCol) throw new Error('Kolom "jawaban" tidak ditemukan.');
+        if (!aCol || !bCol)
+          throw new Error("Kolom pilihan jawaban (a,b) tidak ditemukan.");
+        const colMap = { a: aCol, b: bCol, c: cCol, d: dCol, e: eCol };
+        const letters = ["a", "b", "c", "d", "e"];
+        let ok = 0,
+          errors = 0;
+        const existing = getQ();
+        rows.forEach((row, idx) => {
+          const normKey = (k) =>
+            String(
+              row[
+                Object.keys(row).find((rk) => rk.toLowerCase().trim() === k) ||
+                  ""
+              ] || "",
+            ).trim();
+          const text = normKey(qCol);
+          const ansRaw = normKey(ansCol).toLowerCase().trim();
+          if (!text || !ansRaw) {
+            errors++;
+            return;
+          }
+          const opts = [];
+          letters.forEach((l) => {
+            if (colMap[l]) {
+              const v = normKey(colMap[l]);
+              if (v) opts.push(v);
+            }
+          });
+          if (opts.length < 2) {
+            errors++;
+            return;
+          }
+          const ansIdx = letters.indexOf(ansRaw);
+          if (ansIdx < 0 || ansIdx >= opts.length) {
+            errors++;
+            return;
+          }
+          const cat = catCol ? normKey(catCol) : "";
+          existing.push({
+            id: Date.now() + idx,
+            text,
+            cat,
+            options: opts,
+            answer: ansIdx,
+            createdAt: Date.now(),
+          });
+          ok++;
+        });
+        setQ(existing);
+        return { ok, errors };
+      }
+
+      function downloadTemplate() {
+        if (typeof XLSX === "undefined") {
+          toast("Library XLSX belum siap.", "error");
+          return;
+        }
+        const ws = XLSX.utils.aoa_to_sheet([
+          ["pertanyaan", "a", "b", "c", "d", "e", "jawaban", "kategori"],
+          [
+            "Apa ibukota Indonesia?",
+            "Jakarta",
+            "Bandung",
+            "Surabaya",
+            "Medan",
+            "",
+            "a",
+            "IPS",
+          ],
+          ["Berapa 5 × 8?", "35", "40", "45", "50", "", "b", "Matematika"],
+          [
+            "H2O adalah rumus kimia?",
+            "Garam",
+            "Air",
+            "Gula",
+            "Asam",
+            "Basa",
+            "b",
+            "IPA",
+          ],
+        ]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Template Soal");
+        XLSX.writeFile(wb, "template_soal_test.xlsx");
+        toast("Template diunduh!", "success");
+      }
+
+      // ============================================================
+      // STATISTIK
+      // ============================================================
+      function renderStatistik() {
+        const r = getR(),
+          q = getQ();
+        if (!r.length) {
+          document.getElementById("stat-summary").innerHTML = "";
+          document.getElementById("chart-dist").innerHTML =
+            '<div class="empty-state" style="padding:1.5rem"><div class="empty-icon">📉</div><div class="empty-title">Belum ada data peserta</div></div>';
+          document.getElementById("chart-cat").innerHTML = "";
+          document.getElementById("chart-soal").innerHTML = "";
+          document.getElementById("leaderboard").innerHTML =
+            '<div class="empty-state" style="padding:1rem"><div class="empty-title">Belum ada data</div></div>';
+          return;
+        }
+        const vals = r.map((x) => x.nilai);
+        const avg = Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
+        const max = Math.max(...vals),
+          min = Math.min(...vals);
+        const lulus = r.filter((x) => x.nilai >= 70).length;
+        const lulusRate = Math.round((lulus / r.length) * 100);
+
+        // Summary
+        document.getElementById("stat-summary").innerHTML = `
+    <div class="stat-card blue"><div class="stat-label">Total Peserta</div><div class="stat-value">${r.length}</div><div class="stat-sub">Sudah mengerjakan</div></div>
+    <div class="stat-card purple"><div class="stat-label">Rata-rata</div><div class="stat-value">${avg}</div><div class="stat-sub">Nilai peserta</div></div>
+    <div class="stat-card green"><div class="stat-label">Tertinggi</div><div class="stat-value">${max}</div><div class="stat-sub"></div></div>
+    <div class="stat-card red"><div class="stat-label">Terendah</div><div class="stat-value">${min}</div><div class="stat-sub"></div></div>
+    <div class="stat-card cyan"><div class="stat-label">Lulus (≥70)</div><div class="stat-value">${lulusRate}%</div><div class="stat-sub">${lulus} dari ${r.length}</div></div>
+    <div class="stat-card warn"><div class="stat-label">Total Soal</div><div class="stat-value">${q.length}</div><div class="stat-sub">Bank soal</div></div>`;
+
+        // Distribusi nilai
+        const ranges = [
+          { l: "0-20", lo: 0, hi: 20 },
+          { l: "21-40", lo: 21, hi: 40 },
+          { l: "41-60", lo: 41, hi: 60 },
+          { l: "61-70", lo: 61, hi: 70 },
+          { l: "71-80", lo: 71, hi: 80 },
+          { l: "81-90", lo: 81, hi: 90 },
+          { l: "91-100", lo: 91, hi: 100 },
+        ];
+        const maxCount = Math.max(
+          1,
+          ...ranges.map(
+            (rng) => vals.filter((v) => v >= rng.lo && v <= rng.hi).length,
+          ),
+        );
+        const colors = [
+          "var(--red)",
+          "var(--red)",
+          "var(--warn)",
+          "var(--warn)",
+          "var(--green)",
+          "var(--green)",
+          "var(--accent)",
+        ];
+        document.getElementById("chart-dist").innerHTML =
+          `<div class="bar-chart">${ranges
+            .map((rng, i) => {
+              const cnt = vals.filter((v) => v >= rng.lo && v <= rng.hi).length;
+              const pct = Math.round((cnt / maxCount) * 100);
+              return `<div class="bar-row"><div class="bar-label">${rng.l}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colors[i]}"></div></div><div class="bar-val">${cnt}</div></div>`;
+            })
+            .join("")}</div>`;
+
+        // Per kategori
+        const cats = [
+          ...new Set(r.map((x) => x.kategori || "Umum").filter(Boolean)),
+        ];
+        if (cats.length) {
+          const catAvgs = cats
+            .map((c) => {
+              const catR = r.filter((x) => (x.kategori || "Umum") === c);
+              return {
+                cat: c,
+                avg: Math.round(
+                  catR.reduce((s, x) => s + x.nilai, 0) / catR.length,
+                ),
+                n: catR.length,
+              };
+            })
+            .sort((a, b) => b.avg - a.avg);
+          const mxA = Math.max(1, ...catAvgs.map((x) => x.avg));
+          document.getElementById("chart-cat").innerHTML =
+            `<div class="bar-chart">${catAvgs
+              .map(
+                (x) => `
+      <div class="bar-row"><div class="bar-label" style="width:90px;font-size:11px">${x.cat.substring(0, 12)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round((x.avg / mxA) * 100)}%;background:var(--purple)"></div></div><div class="bar-val">${x.avg}</div></div>`,
+              )
+              .join("")}</div>`;
+        } else {
+          document.getElementById("chart-cat").innerHTML =
+            '<div style="color:var(--text3);font-size:13px;text-align:center;padding:1rem">Tidak ada data kategori</div>';
+        }
+
+        // Per soal (jika ada data detail — simpel: lewatkan jika tidak ada)
+        document.getElementById("chart-soal").innerHTML =
+          '<div style="color:var(--text3);font-size:13px;text-align:center;padding:1rem">Aktifkan mode analitik soal saat peserta mengerjakan ujian untuk melihat data ini</div>';
+
+        // Leaderboard
+        const sorted = [...r].sort((a, b) => b.nilai - a.nilai).slice(0, 10);
+        document.getElementById("leaderboard").innerHTML = sorted
+          .map((x, i) => {
+            const medal =
+              i === 0
+                ? "🥇"
+                : i === 1
+                  ? "🥈"
+                  : i === 2
+                    ? "🥉"
+                    : `<span style="font-family:var(--mono);font-size:13px;color:var(--text3)">${i + 1}</span>`;
+            return `<div style="display:flex;align-items:center;gap:12px;padding:.75rem 0;border-bottom:1px solid var(--border)">
+      <div style="width:32px;text-align:center;font-size:18px;flex-shrink:0">${medal}</div>
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.nama}</div><div style="font-size:11px;color:var(--text2)">${x.benar}/${x.total} benar · ${fmtDate(x.selesaiAt)}</div></div>
+      <span class="badge ${x.nilai >= 70 ? "badge-green" : x.nilai >= 50 ? "badge-warn" : "badge-red"}">${x.nilai}</span>
     </div>`;
           })
           .join("");
       }
 
-      function delSoal(i) {
-        openModal("Hapus Soal", "Hapus soal ini dari bank soal?", () => {
-          const q = getQ();
-          q.splice(i, 1);
-          setQ(q);
-          renderSoalList();
-          updateSidebarCounts();
-          toast("Soal dihapus.", "info");
-        });
-      }
-      function clearAllSoal() {
-        openModal(
-          "Hapus Semua Soal",
-          "Hapus semua soal? Data tidak bisa dikembalikan.",
-          () => {
-            setQ([]);
-            renderSoalList();
-            updateSidebarCounts();
-            toast("Semua soal dihapus.", "info");
-          },
-        );
-      }
-
-      // ================================================================
+      // ============================================================
       // RESPONSES
-      // ================================================================
+      // ============================================================
       function renderResponses() {
         const r = getR();
         const tbody = document.getElementById("resp-tbody");
         if (!r.length) {
           tbody.innerHTML =
-            '<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text3)">Belum ada data peserta</td></tr>';
+            '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text3)">Belum ada data peserta</td></tr>';
           return;
         }
         tbody.innerHTML = [...r]
           .reverse()
           .map(
-            (x, i) => `
-    <tr>
-      <td class="mono">${r.length - i}</td>
-      <td><span style="font-weight:600;color:var(--text)">${x.nama}</span></td>
-      <td class="mono">${x.token}</td>
-      <td>${x.sesi}</td>
-      <td><span class="badge ${x.nilai >= 70 ? "badge-green" : x.nilai >= 50 ? "badge-warn" : "badge-red"}">${x.nilai}</span></td>
-      <td style="color:var(--green);font-weight:600">${x.benar}</td>
-      <td style="color:var(--red)">${x.salah}</td>
-      <td style="color:var(--text2)">${x.skip}</td>
-      <td class="mono">${x.durasiMenit}m</td>
-      <td class="mono" style="font-size:11px">${fmtDate(x.selesaiAt)}</td>
-    </tr>`,
+            (x, i) => `<tr>
+    <td class="mono">${r.length - i}</td>
+    <td><span style="font-weight:600;color:var(--text)">${x.nama}</span></td>
+    <td><span class="badge ${x.nilai >= 70 ? "badge-green" : x.nilai >= 50 ? "badge-warn" : "badge-red"}">${x.nilai}</span></td>
+    <td style="color:var(--green);font-weight:600">${x.benar}</td>
+    <td style="color:var(--red)">${x.salah}</td>
+    <td style="color:var(--text2)">${x.skip}</td>
+    <td class="mono">${x.total}</td>
+    <td class="mono">${x.durasiMnt}m</td>
+    <td class="mono" style="font-size:11px">${fmtDate(x.selesaiAt)}</td>
+  </tr>`,
           )
           .join("");
       }
-
-      function clearAllResponses() {
-        openModal(
-          "Hapus Data Respons",
-          "Hapus semua data hasil ujian peserta?",
-          () => {
-            setR([]);
-            renderResponses();
-            renderDashboard();
-            toast("Data respons dihapus.", "info");
-          },
-        );
+      function confirmClearResp() {
+        openModal("Hapus Data", "Hapus semua data hasil ujian?", () => {
+          setR([]);
+          renderResponses();
+          renderDashboard();
+          toast("Data respons dihapus.", "info");
+        });
       }
 
-      // ================================================================
+      // ============================================================
       // AKTIF
-      // ================================================================
+      // ============================================================
       function renderAktif() {
-        const a = getA();
-        const el = document.getElementById("aktif-list");
-        // Clean stale (>8 jam)
-        const cleaned = a.filter(
+        let a = getA().filter(
           (x) => Date.now() - x.startAt < 8 * 60 * 60 * 1000,
         );
-        if (cleaned.length !== a.length) setA(cleaned);
-        if (!cleaned.length) {
+        setA(a);
+        const el = document.getElementById("aktif-list");
+        if (!a.length) {
           el.innerHTML =
-            '<div class="empty-state"><div class="empty-icon">🟢</div><div class="empty-title">Tidak ada peserta aktif</div><div class="empty-sub">Peserta yang sedang mengerjakan ujian akan tampil di sini</div></div>';
+            '<div class="empty-state"><div class="empty-icon">🟢</div><div class="empty-title">Tidak ada peserta aktif</div></div>';
           return;
         }
-        el.innerHTML = cleaned
+        el.innerHTML = a
           .map((x) => {
-            const elapsed = Math.floor((Date.now() - x.startAt) / 1000);
-            const sisa = Math.max(0, x.durSec - elapsed);
-            return `<div class="token-item">
-      <div style="width:38px;height:38px;border-radius:9px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📝</div>
-      <div class="token-info">
-        <div class="token-session">${x.nama}</div>
-        <div class="token-meta">Token: ${x.token} · Sesi: ${x.sesi} · Mulai: ${fmtDate(x.startAt)}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-family:var(--mono);font-size:14px;font-weight:600;color:${sisa < 300 ? "var(--red)" : sisa < 600 ? "var(--warn)" : "var(--green)"}">${fmtTime(sisa)}</div>
-        <div style="font-size:11px;color:var(--text2)">Sisa waktu</div>
-      </div>
+            const elapsed = Math.floor((Date.now() - x.startAt) / 1000),
+              sisa = Math.max(0, x.durSec - elapsed);
+            const col =
+              sisa < 300
+                ? "var(--red)"
+                : sisa < 600
+                  ? "var(--warn)"
+                  : "var(--green)";
+            return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:border-color .18s">
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📝</div>
+      <div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:var(--text)">${x.nama}</div><div style="font-size:12px;color:var(--text2)">Mulai: ${fmtDate(x.startAt)} · ${x.jumlahSoal} soal</div></div>
+      <div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mono);font-size:16px;font-weight:700;color:${col}">${fmtTime(sisa)}</div><div style="font-size:11px;color:var(--text2)">Sisa waktu</div></div>
     </div>`;
           })
           .join("");
       }
 
-      // ================================================================
-      // PESERTA LOGIN & UJIAN
-      // ================================================================
-      function doLogin() {
-        const nama = document.getElementById("inp-nama").value.trim();
-        const code = document
-          .getElementById("inp-token")
-          .value.trim()
-          .toUpperCase();
-        const errEl = document.getElementById("login-err");
-        if (!nama) {
-          toast("Nama tidak boleh kosong.", "error");
+      // ============================================================
+      // EXPORT NILAI
+      // ============================================================
+      function exportNilai() {
+        if (typeof XLSX === "undefined") {
+          toast("Library XLSX belum siap.", "error");
           return;
         }
-        const tokens = getT();
-        const ti = tokens.findIndex((t) => t.code === code);
-        if (ti < 0 || tokens[ti].used) {
-          errEl.style.display = "block";
+        const r = getR();
+        if (!r.length) {
+          toast("Belum ada data untuk diekspor.", "warn");
           return;
         }
-        const q = getQ();
-        if (!q.length) {
-          errEl.style.display = "block";
-          errEl.textContent = "Belum ada soal. Hubungi pengawas.";
-          return;
-        }
-        errEl.style.display = "none";
-        tokens[ti].used = true;
-        tokens[ti].usedBy = nama;
-        tokens[ti].usedAt = Date.now();
-        setT(tokens);
-        // Register as aktif
-        const aktif = getA();
-        aktif.push({
-          nama,
-          token: code,
-          sesi: tokens[ti].sesi,
-          startAt: Date.now(),
-          durSec: tokens[ti].dur * 60,
+        const rows = [
+          [
+            "No",
+            "Nama",
+            "Nilai",
+            "Benar",
+            "Salah",
+            "Dilewati",
+            "Total Soal",
+            "Durasi (menit)",
+            "Waktu Selesai",
+          ],
+        ];
+        [...r].reverse().forEach((x, i) => {
+          rows.push([
+            i + 1,
+            x.nama,
+            x.nilai,
+            x.benar,
+            x.salah,
+            x.skip,
+            x.total,
+            x.durasiMnt,
+            fmtDate(x.selesaiAt),
+          ]);
         });
-        setA(aktif);
-        startUjian(nama, tokens[ti]);
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws["!cols"] = [
+          { wch: 5 },
+          { wch: 25 },
+          { wch: 8 },
+          { wch: 8 },
+          { wch: 8 },
+          { wch: 10 },
+          { wch: 12 },
+          { wch: 15 },
+          { wch: 20 },
+        ];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Nilai Peserta");
+        XLSX.writeFile(
+          wb,
+          `nilai_test_${new Date().toISOString().slice(0, 10)}.xlsx`,
+        );
+        toast("File nilai berhasil diexport!", "success");
       }
 
-      function startUjian(nama, tok) {
+      function exportHasilSaya() {
+        if (!lastResult) {
+          toast("Tidak ada hasil untuk diekspor.", "warn");
+          return;
+        }
+        if (typeof XLSX === "undefined") {
+          toast("Library XLSX belum siap.", "error");
+          return;
+        }
+        const x = lastResult;
+        const rows = [
+          ["Nama", x.nama],
+          ["Nilai", x.nilai],
+          ["Benar", x.benar],
+          ["Salah", x.salah],
+          ["Dilewati", x.skip],
+          ["Total Soal", x.total],
+          ["Durasi", x.durasiMnt + " menit"],
+          ["Waktu Selesai", fmtDate(x.selesaiAt)],
+          [""],
+          ["No", "Pertanyaan", "Jawaban Kamu", "Jawaban Benar", "Status"],
+        ];
+        x.detail.forEach((d, i) =>
+          rows.push([i + 1, d.soal, d.jawabanKamu, d.jawabanBenar, d.status]),
+        );
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws["!cols"] = [
+          { wch: 5 },
+          { wch: 50 },
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 10 },
+        ];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Hasil Saya");
+        XLSX.writeFile(wb, `hasil_ujian_${x.nama.replace(/\s+/g, "_")}.xlsx`);
+        toast("Hasil kamu berhasil diekspor!", "success");
+      }
+
+      // ============================================================
+      // PESERTA LOGIN
+      // ============================================================
+      function doLogin() {
+        const nama = document.getElementById("inp-nama").value.trim();
+        const durasi = Math.min(
+          300,
+          Math.max(
+            5,
+            parseInt(document.getElementById("inp-durasi").value) || 90,
+          ),
+        );
+        const jumlah = Math.min(
+          2000,
+          Math.max(
+            1,
+            parseInt(document.getElementById("inp-jumlah").value) || 50,
+          ),
+        );
+        const kategori = document.getElementById("inp-kategori").value;
+        const shuffle = document.getElementById("chk-shuffle").checked;
+        const fullscreenMode =
+          document.getElementById("chk-fullscreen").checked;
+        document.getElementById("login-err").style.display = "none";
+        document.getElementById("login-nosoal").style.display = "none";
+        if (!nama) {
+          document.getElementById("login-err").style.display = "block";
+          return;
+        }
+        let pool = getQ();
+        if (!pool.length) {
+          document.getElementById("login-nosoal").style.display = "block";
+          return;
+        }
+        if (kategori) pool = pool.filter((q) => q.cat === kategori);
+        if (!pool.length) {
+          document.getElementById("login-nosoal").textContent =
+            "Tidak ada soal untuk kategori ini.";
+          document.getElementById("login-nosoal").style.display = "block";
+          return;
+        }
+        // shuffle
+        if (shuffle) pool = pool.sort(() => Math.random() - 0.5);
+        // ambil sejumlah soal per siklus
+        pool = pool.slice(0, Math.min(jumlah, pool.length));
+        // register aktif
+        const a = getA();
+        a.push({
+          nama,
+          startAt: Date.now(),
+          durSec: durasi * 60,
+          jumlahSoal: pool.length,
+        });
+        setA(a);
+        startUjian(nama, durasi, pool, fullscreenMode);
+      }
+
+      // ============================================================
+      // UJIAN
+      // ============================================================
+      function startUjian(nama, durasi, pool, useFullscreen) {
         clearTimer();
-        const pool = [...getQ()].sort(() => Math.random() - 0.5);
+        clearFsWarn();
         ujianState = {
           nama,
-          tok,
+          durasi,
           pool,
           cur: 0,
           answers: Array(pool.length).fill(-1),
-          ragu: new Array(pool.length).fill(false),
-          secLeft: tok.dur * 60,
-          totalSec: tok.dur * 60,
+          ragu: Array(pool.length).fill(false),
+          secLeft: durasi * 60,
+          totalSec: durasi * 60,
           startAt: Date.now(),
         };
-        document.getElementById("ujian-sesi-title").textContent = tok.sesi;
-        document.getElementById("ujian-peserta-sub").textContent =
-          nama + " · " + tok.code;
+        fsEnabled = useFullscreen;
+        fsViolations = 0;
+        document.getElementById("ujian-nama-title").textContent = nama;
         show("s-ujian");
         renderUjianQ();
         startTimer();
+        // anti-refresh
+        window.onbeforeunload = (e) => {
+          e.preventDefault();
+          e.returnValue = "Ujian sedang berlangsung! Keluar?";
+          return "Ujian sedang berlangsung!";
+        };
+        // fullscreen
+        if (useFullscreen) {
+          requestFullscreen();
+          document.addEventListener("fullscreenchange", onFsChange);
+          document.addEventListener("webkitfullscreenchange", onFsChange);
+        }
+      }
+
+      // Anti-refresh & fullscreen
+      function requestFullscreen() {
+        const el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      }
+      function exitFullscreen() {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      }
+      function isFullscreen() {
+        return !!(
+          document.fullscreenElement || document.webkitFullscreenElement
+        );
+      }
+      function onFsChange() {
+        if (!ujianState || !fsEnabled) return;
+        if (!isFullscreen()) {
+          fsViolations++;
+          document.getElementById("fs-viol").textContent = fsViolations;
+          if (fsViolations >= 3) {
+            clearFsWarn();
+            document.removeEventListener("fullscreenchange", onFsChange);
+            document.removeEventListener("webkitfullscreenchange", onFsChange);
+            toast(
+              "3x keluar fullscreen — ujian dikumpulkan otomatis!",
+              "error",
+            );
+            setTimeout(() => finishUjian(), 1500);
+            return;
+          }
+          showFsWarn();
+        } else {
+          hideFsWarn();
+        }
+      }
+      function showFsWarn() {
+        const el = document.getElementById("fs-warn");
+        el.classList.add("on");
+        let cd = 5;
+        document.getElementById("fs-countdown").textContent = cd;
+        clearFsWarn();
+        fsCountdownInt = setInterval(() => {
+          cd--;
+          document.getElementById("fs-countdown").textContent = cd;
+          if (cd <= 0) {
+            clearFsWarn();
+            if (!isFullscreen()) {
+              reenterFullscreen();
+            }
+          }
+        }, 1000);
+      }
+      function hideFsWarn() {
+        clearFsWarn();
+        document.getElementById("fs-warn").classList.remove("on");
+      }
+      function clearFsWarn() {
+        if (fsCountdownInt) {
+          clearInterval(fsCountdownInt);
+          fsCountdownInt = null;
+        }
+      }
+      function reenterFullscreen() {
+        requestFullscreen();
+        hideFsWarn();
       }
 
       function renderUjianQ() {
         const { pool, cur, answers, ragu } = ujianState;
         const q = pool[cur];
-
-        // Update meta
-        document.getElementById("q-num-label").textContent =
+        const answered = answers.filter((a) => a !== -1).length,
+          raguCnt = ragu.filter(Boolean).length;
+        document.getElementById("q-num-lbl").textContent =
           `Soal ${cur + 1} dari ${pool.length}`;
-        document.getElementById("q-cat-badge").textContent = q.cat || "Umum";
-        const answered = answers.filter((a) => a !== -1).length;
-        document.getElementById("q-progress-info").textContent =
-          `${answered} dijawab · ${ragu.filter(Boolean).length} ragu`;
-
-        // Question text
+        document.getElementById("q-cat-badge").textContent = q.cat || "";
+        document.getElementById("q-cat-badge").style.display = q.cat
+          ? ""
+          : "none";
+        document.getElementById("q-answered-info").textContent =
+          `${answered} dijawab · ${raguCnt} ragu`;
+        document.getElementById("ujian-prog-sub").textContent =
+          `${answered} dari ${pool.length} dijawab`;
         document.getElementById("q-text").textContent = q.text;
-
-        // Options
-        const optsEl = document.getElementById("ujian-opts");
-        optsEl.innerHTML = q.options
+        document.getElementById("ujian-opts").innerHTML = q.options
           .map(
             (op, oi) => `
     <div class="opt${answers[cur] === oi ? " selected" : ""}" onclick="selectOpt(${oi})" style="animation-delay:${oi * 0.04}s">
@@ -3288,41 +3879,30 @@
     </div>`,
           )
           .join("");
-
-        // Nav buttons
         document.getElementById("btn-prev").disabled = cur === 0;
         document.getElementById("btn-next").textContent =
-          cur === pool.length - 1 ? "Lihat Ringkasan →" : "Berikutnya →";
-
-        // Ragu buttons
-        const isRagu = ragu[cur];
-        document.getElementById("btn-ragu").style.display = isRagu
+          cur === pool.length - 1 ? "Ringkasan →" : "Next →";
+        document.getElementById("btn-ragu").style.display = ragu[cur]
           ? "none"
-          : "flex";
-        document.getElementById("btn-clear-ragu").style.display = isRagu
-          ? "flex"
+          : "inline-flex";
+        document.getElementById("btn-unragu").style.display = ragu[cur]
+          ? "inline-flex"
           : "none";
-
-        // Nav grid
         renderNavGrid();
         closeSidebar();
       }
-
       function renderNavGrid() {
         const { pool, cur, answers, ragu } = ujianState;
-        const grid = document.getElementById("soal-nav-grid");
-        grid.innerHTML = pool
+        document.getElementById("soal-nav-grid").innerHTML = pool
           .map((_, i) => {
             let cls = "snum";
-            if (answers[i] !== -1 && ragu[i]) cls += " ragu";
+            if (ragu[i]) cls += " ragu";
             else if (answers[i] !== -1) cls += " answered";
-            else if (ragu[i]) cls += " ragu";
-            if (i === cur) cls += " active";
+            if (i === cur) cls += " cur";
             return `<div class="${cls}" onclick="jumpQ(${i})">${i + 1}</div>`;
           })
           .join("");
       }
-
       function selectOpt(oi) {
         ujianState.answers[ujianState.cur] = oi;
         renderUjianQ();
@@ -3352,14 +3932,14 @@
         renderUjianQ();
       }
 
-      // ================================================================
+      // ============================================================
       // TIMER
-      // ================================================================
+      // ============================================================
       function startTimer() {
-        updateTimerDisplay();
+        updateTimerUI();
         timerInt = setInterval(() => {
           ujianState.secLeft--;
-          updateTimerDisplay();
+          updateTimerUI();
           if (ujianState.secLeft <= 0) {
             clearTimer();
             finishUjian();
@@ -3372,11 +3952,11 @@
           timerInt = null;
         }
       }
-      function updateTimerDisplay() {
-        const s = ujianState.secLeft;
-        const pct = Math.round((s / ujianState.totalSec) * 100);
-        const disp = document.getElementById("timer-disp");
-        const bar = document.getElementById("timer-bar");
+      function updateTimerUI() {
+        const s = ujianState.secLeft,
+          pct = Math.round((s / ujianState.totalSec) * 100);
+        const disp = document.getElementById("timer-disp"),
+          bar = document.getElementById("timer-bar");
         disp.textContent = fmtTime(s);
         disp.className =
           "timer-display" + (s < 300 ? " danger" : s < 600 ? " warn" : "");
@@ -3385,59 +3965,73 @@
           pct > 30 ? "var(--green)" : pct > 10 ? "var(--warn)" : "var(--red)";
       }
 
-      // ================================================================
+      // ============================================================
       // FINISH
-      // ================================================================
+      // ============================================================
       function confirmFinish() {
-        const { pool, answers } = ujianState;
-        const skip = answers.filter((a) => a === -1).length;
+        const skip = ujianState.answers.filter((a) => a === -1).length;
         openModal(
           "Kumpulkan Jawaban",
           skip > 0
-            ? `Masih ada ${skip} soal yang belum dijawab. Yakin ingin mengumpulkan?`
-            : "Yakin ingin mengumpulkan semua jawaban?",
+            ? `Masih ada ${skip} soal belum dijawab. Yakin kumpulkan?`
+            : "Yakin mengumpulkan semua jawaban?",
           finishUjian,
-          true,
         );
       }
 
       function finishUjian() {
         clearTimer();
-        const { pool, answers, nama, tok, startAt } = ujianState;
+        clearFsWarn();
+        window.onbeforeunload = null;
+        document.removeEventListener("fullscreenchange", onFsChange);
+        document.removeEventListener("webkitfullscreenchange", onFsChange);
+        if (isFullscreen()) exitFullscreen();
+        const { pool, answers, nama, startAt, durasi } = ujianState;
         let benar = 0,
           salah = 0,
           skip = 0;
-        pool.forEach((q, i) => {
-          if (answers[i] === -1) skip++;
-          else if (answers[i] === q.answer) benar++;
+        const detail = pool.map((q, i) => {
+          const ua = answers[i],
+            ca = q.answer,
+            ok = ua === ca;
+          if (ua === -1) skip++;
+          else if (ok) benar++;
           else salah++;
+          return {
+            soal: q.text,
+            jawabanKamu: ua >= 0 ? q.options[ua] : "(tidak dijawab)",
+            jawabanBenar: q.options[ca],
+            status: ua === -1 ? "Dilewati" : ok ? "Benar" : "Salah",
+          };
         });
-        const total = pool.length;
-        const nilai = Math.round((benar / total) * 100);
-        const durasiSec = Math.floor((Date.now() - startAt) / 1000);
-        const durasiMenit = Math.ceil(durasiSec / 60);
-
-        // Save response
+        const total = pool.length,
+          nilai = Math.round((benar / total) * 100);
+        const durasiSec = Math.floor((Date.now() - startAt) / 1000),
+          durasiMnt = Math.ceil(durasiSec / 60);
         const r = getR();
         r.push({
           nama,
-          token: tok.code,
-          sesi: tok.sesi,
           nilai,
           benar,
           salah,
           skip,
           total,
-          durasiMenit,
+          durasiMnt,
           selesaiAt: Date.now(),
         });
         setR(r);
-
-        // Remove from aktif
-        const a = getA().filter((x) => x.token !== tok.code);
-        setA(a);
-
-        // Show result
+        setA(getA().filter((x) => x.nama !== nama));
+        lastResult = {
+          nama,
+          nilai,
+          benar,
+          salah,
+          skip,
+          total,
+          durasiMnt,
+          selesaiAt: Date.now(),
+          detail,
+        };
         document.getElementById("res-score").textContent = nilai;
         document.getElementById("res-score").style.color =
           nilai >= 70
@@ -3445,47 +4039,39 @@
             : nilai >= 50
               ? "var(--warn)"
               : "var(--red)";
-        document.getElementById("res-name").textContent = nama;
-        document.getElementById("res-token-disp").textContent =
-          tok.code + " · " + tok.sesi;
+        document.getElementById("res-nama").textContent = nama;
+        document.getElementById("res-sub").textContent =
+          `${benar} benar dari ${total} soal`;
         document.getElementById("r-benar").textContent = benar;
         document.getElementById("r-salah").textContent = salah;
         document.getElementById("r-skip").textContent = skip;
-
-        // Review
+        document.getElementById("r-durasi").textContent = durasiMnt + "m";
         document.getElementById("review-body").innerHTML = pool
           .map((q, i) => {
-            const ua = answers[i];
-            const ca = q.answer;
-            const ok = ua === ca;
-            return `<div class="review-card" style="animation:fadeUp .3s ease ${i * 0.04}s both">
-      <div class="review-head">
-        <span class="badge ${ok ? "badge-green" : ua === -1 ? "badge-purple" : "badge-red"}">${ok ? "✓ Benar" : ua === -1 ? "Dilewati" : "✕ Salah"}</span>
-        <div class="review-q-text">${i + 1}. ${q.text}</div>
-      </div>
-      <div class="review-opts">
-        ${q.options
-          .map(
-            (op, oi) => `
-          <div class="review-opt${oi === ca ? " correct" : ""}${oi === ua && oi !== ca ? " wrong" : ""}">
-            <div class="review-opt-key">${String.fromCharCode(65 + oi)}</div>
-            <span style="flex:1">${op}</span>
-            ${oi === ca ? '<span style="font-size:11px;font-weight:700">✓ Benar</span>' : ""}
-            ${oi === ua && oi !== ca ? '<span style="font-size:11px">Jawaban kamu</span>' : ""}
-          </div>`,
-          )
-          .join("")}
-      </div>
+            const ua = answers[i],
+              ca = q.answer,
+              ok = ua === ca;
+            return `<div class="review-card" style="animation:fadeUp .3s ease ${i * 0.03}s both">
+      <div class="review-head"><span class="badge ${ok ? "badge-green" : ua === -1 ? "badge-purple" : "badge-red"}">${ok ? "✓ Benar" : ua === -1 ? "Dilewati" : "✕ Salah"}</span><div class="review-q-text">${i + 1}. ${q.text}</div></div>
+      <div class="review-opts">${q.options
+        .map(
+          (
+            op,
+            oi,
+          ) => `<div class="review-opt${oi === ca ? " correct" : ""}${oi === ua && oi !== ca ? " wrong" : ""}">
+        <div class="review-opt-key">${String.fromCharCode(65 + oi)}</div><span style="flex:1">${op}</span>
+        ${oi === ca ? '<span style="font-size:11px;font-weight:700;flex-shrink:0">✓ Benar</span>' : ""}
+        ${oi === ua && oi !== ca ? '<span style="font-size:11px;flex-shrink:0;color:var(--red)">Jawaban kamu</span>' : ""}
+      </div>`,
+        )
+        .join("")}</div>
     </div>`;
           })
           .join("");
-
         show("s-result");
       }
 
-      // ================================================================
       // INIT
-      // ================================================================
       resetQ();
     </script>
   </body>
