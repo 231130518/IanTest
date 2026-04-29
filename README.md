@@ -1,1 +1,5 @@
-# IanTest
+# Web Simulasi Ujian Digital
+
+Ada beberapa fitur yang dapat digunakan didalam website ini
+Admin: ...
+User: ...
