@@ -2748,27 +2748,127 @@
       // ============================================================
       // DATABASE
       // ============================================================
-      const K_Q = "Simulasi Ujian_q",
-        K_R = "Simulasi Ujian_r",
-        K_A = "Simulasi Ujian_a";
-      const dbGet = (k, d = []) => {
-        try {
-          return JSON.parse(localStorage.getItem(k)) ?? d;
-        } catch (e) {
-          return d;
-        }
+      const firebaseCache = {
+        soal: [],
+        nilai: [],
+        aktif: [],
+        ready: false,
       };
-      const dbSet = (k, v) => {
-        try {
-          localStorage.setItem(k, JSON.stringify(v));
-        } catch (e) {}
+      const getQ = () => firebaseCache.soal;
+      const getR = () => firebaseCache.nilai;
+      const getA = () => firebaseCache.aktif;
+      const waitFirebase = async () => {
+        return firebaseReady;
       };
-      const getQ = () => dbGet(K_Q, []);
-      const getR = () => dbGet(K_R, []);
-      const getA = () => dbGet(K_A, []);
-      const setQ = (v) => dbSet(K_Q, v);
-      const setR = (v) => dbSet(K_R, v);
-      const setA = (v) => dbSet(K_A, v);
+      const firebaseWrite = async (action, ...args) => {
+        const api = await waitFirebase();
+        return api[action](...args);
+      };
+      const setFirebaseCache = (key, value) => {
+        firebaseCache[key] = Array.isArray(value) ? value : [];
+        firebaseCache.ready = true;
+        const page = document
+          .querySelector(".admin-page.on")
+          ?.id?.replace("ap-", "");
+        if (page) renderAdminPage(page);
+      };
+      const firebaseConfig = {
+        apiKey: "AIzaSyBx0hhLtjVrfmnbjl78VbdJBwruektxGn8",
+        authDomain: "ujian-online-971df.firebaseapp.com",
+        projectId: "ujian-online-971df",
+        storageBucket: "ujian-online-971df.firebasestorage.app",
+        messagingSenderId: "554664926566",
+        appId: "1:554664926566:web:9e0e539bb752aa5554fca7",
+      };
+      const firebaseReady = Promise.all([
+        import("https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js"),
+        import(
+          "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js"
+        ),
+      ]).then(([appMod, fs]) => {
+        const app = appMod.initializeApp(firebaseConfig);
+        const db = fs.getFirestore(app);
+        const col = (name) => fs.collection(db, name);
+        const normalize = (data) =>
+          Object.fromEntries(
+            Object.entries(data).map(([key, value]) => [
+              key,
+              value && typeof value.toMillis === "function"
+                ? value.toMillis()
+                : value,
+            ]),
+          );
+        const snapList = (snap) =>
+          snap.docs.map((d) => ({ id: d.id, ...normalize(d.data()) }));
+        const clearCollection = async (name) => {
+          const snap = await fs.getDocs(col(name));
+          await Promise.all(
+            snap.docs.map((d) => fs.deleteDoc(fs.doc(db, name, d.id))),
+          );
+        };
+        const deleteAktifByName = async (nama) => {
+          const snap = await fs.getDocs(col("aktif"));
+          const docs = snap.docs.filter((d) => d.data().nama === nama);
+          await Promise.all(
+            docs.map((d) => fs.deleteDoc(fs.doc(db, "aktif", d.id))),
+          );
+        };
+        const pruneAktif = async (cutoff) => {
+          const snap = await fs.getDocs(col("aktif"));
+          const docs = snap.docs.filter(
+            (d) => (d.data().startAt || 0) <= cutoff,
+          );
+          await Promise.all(
+            docs.map((d) => fs.deleteDoc(fs.doc(db, "aktif", d.id))),
+          );
+        };
+        const api = {
+          addSoal: (data) => fs.addDoc(col("soal"), data),
+          deleteSoal: (id) => fs.deleteDoc(fs.doc(db, "soal", id)),
+          clearSoal: () => clearCollection("soal"),
+          importSoal: async (items) => {
+            await Promise.all(
+              items.map((item) => fs.addDoc(col("soal"), item)),
+            );
+          },
+          addNilai: (data) => fs.addDoc(col("nilai"), data),
+          clearNilai: () => clearCollection("nilai"),
+          addAktif: async (data) => {
+            const ref = await fs.addDoc(col("aktif"), data);
+            return ref.id;
+          },
+          deleteAktif: (id) => fs.deleteDoc(fs.doc(db, "aktif", id)),
+          deleteAktifByName,
+          pruneAktif,
+        };
+        const listenCollection = (name, cacheKey, sortKey) =>
+          new Promise((resolve, reject) => {
+            let first = true;
+            fs.onSnapshot(
+              col(name),
+              (snap) => {
+                const list = snapList(snap).sort(
+                  (a, b) => (a[sortKey] || 0) - (b[sortKey] || 0),
+                );
+                setFirebaseCache(cacheKey, list);
+                if (first) {
+                  first = false;
+                  resolve();
+                }
+              },
+              reject,
+            );
+          });
+
+        return Promise.all([
+          listenCollection("soal", "soal", "createdAt"),
+          listenCollection("nilai", "nilai", "selesaiAt"),
+          listenCollection("aktif", "aktif", "startAt"),
+        ]).then(() => {
+          console.log("Firebase connected successfully");
+          return api;
+        });
+      });
 
       const ADMIN_USR = "admin",
         ADMIN_PWD = "sitepu2209";
@@ -2864,12 +2964,17 @@
         show("s-admin-login");
         setTimeout(() => document.getElementById("adm-usr").focus(), 200);
       }
-      function goPesertaLogin() {
+      async function goPesertaLogin() {
         document.getElementById("inp-nama").value = "";
         document.getElementById("inp-durasi").value = "90";
         document.getElementById("inp-jumlah").value = "50";
         document.getElementById("login-err").style.display = "none";
         document.getElementById("login-nosoal").style.display = "none";
+        try {
+          await waitFirebase();
+        } catch (err) {
+          toast(err.message, "error");
+        }
         // populate kategori
         const cats = [
           ...new Set(
@@ -3052,24 +3157,32 @@
           .join("");
       }
       function confirmDelSoal(i) {
-        openModal("Hapus Soal", "Hapus soal ini dari bank soal?", () => {
+        openModal("Hapus Soal", "Hapus soal ini dari bank soal?", async () => {
           const q = getQ();
-          q.splice(i, 1);
-          setQ(q);
-          renderSoalList();
-          updateSidebarCounts();
-          toast("Soal dihapus.", "info");
+          const item = q[i];
+          if (!item?.id) {
+            toast("ID soal tidak ditemukan.", "error");
+            return;
+          }
+          try {
+            await firebaseWrite("deleteSoal", item.id);
+            toast("Soal dihapus.", "info");
+          } catch (err) {
+            toast("Gagal menghapus soal: " + err.message, "error");
+          }
         });
       }
       function confirmClearSoal() {
         openModal(
           "Hapus Semua Soal",
           "Hapus semua soal? Tidak bisa dibatalkan.",
-          () => {
-            setQ([]);
-            renderSoalList();
-            updateSidebarCounts();
-            toast("Semua soal dihapus.", "info");
+          async () => {
+            try {
+              await firebaseWrite("clearSoal");
+              toast("Semua soal dihapus.", "info");
+            } catch (err) {
+              toast("Gagal menghapus soal: " + err.message, "error");
+            }
           },
         );
       }
@@ -3097,7 +3210,7 @@
         addOpt();
         addOpt();
       }
-      function saveQ() {
+      async function saveQ() {
         const text = document.getElementById("inp-q").value.trim(),
           cat = document.getElementById("inp-cat").value.trim();
         if (!text) {
@@ -3121,24 +3234,26 @@
           showQMsg("Centang jawaban benar.", false);
           return;
         }
-        const q = getQ();
-        q.push({
-          id: Date.now(),
-          text,
-          cat,
-          options: opts,
-          answer: ans,
-          createdAt: Date.now(),
-        });
-        setQ(q);
-        refreshCatDl();
-        updateSidebarCounts();
-        showQMsg("✓ Soal disimpan!", true);
-        toast("Soal disimpan!", "success");
-        setTimeout(() => {
-          document.getElementById("q-msg").style.display = "none";
-          resetQ();
-        }, 1500);
+        try {
+          await firebaseWrite("addSoal", {
+            text,
+            cat,
+            options: opts,
+            answer: ans,
+            createdAt: Date.now(),
+          });
+          refreshCatDl();
+          updateSidebarCounts();
+          showQMsg("✓ Soal disimpan!", true);
+          toast("Soal disimpan!", "success");
+          setTimeout(() => {
+            document.getElementById("q-msg").style.display = "none";
+            resetQ();
+          }, 1500);
+        } catch (err) {
+          showQMsg("Gagal menyimpan soal: " + err.message, false);
+          toast("Gagal menyimpan soal.", "error");
+        }
       }
       function showQMsg(t, ok) {
         const el = document.getElementById("q-msg");
@@ -3179,7 +3294,7 @@
         progText.textContent = "Membaca file...";
         progBar.style.width = "20%";
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
           try {
             progBar.style.width = "50%";
             progText.textContent = "Memproses data...";
@@ -3194,6 +3309,9 @@
             progBar.style.width = "75%";
             progText.textContent = "Menyimpan soal...";
             const result = processImportRows(rows);
+            if (result.items.length) {
+              await firebaseWrite("importSoal", result.items);
+            }
             progBar.style.width = "100%";
             progText.textContent = "Selesai!";
             setTimeout(() => {
@@ -3206,7 +3324,7 @@
       </div>`;
             updateSidebarCounts();
             renderDashboard();
-            toast(`${result.ok} soal berhasil diimpor!','success`);
+            toast(`${result.ok} soal berhasil diimpor!`, "success");
             document.getElementById("file-input").value = "";
           } catch (err) {
             progWrap.style.display = "none";
@@ -3321,7 +3439,7 @@
         const letters = ["a", "b", "c", "d", "e"];
         let ok = 0,
           errors = 0;
-        const existing = getQ();
+        const items = [];
         rows.forEach((row, idx) => {
           const normKey = (k) =>
             String(
@@ -3353,8 +3471,7 @@
             return;
           }
           const cat = catCol ? normKey(catCol) : "";
-          existing.push({
-            id: Date.now() + idx,
+          items.push({
             text,
             cat,
             options: opts,
@@ -3363,8 +3480,7 @@
           });
           ok++;
         });
-        setQ(existing);
-        return { ok, errors };
+        return { ok, errors, items };
       }
 
       function downloadTemplate() {
@@ -3552,11 +3668,13 @@
           .join("");
       }
       function confirmClearResp() {
-        openModal("Hapus Data", "Hapus semua data hasil ujian?", () => {
-          setR([]);
-          renderResponses();
-          renderDashboard();
-          toast("Data respons dihapus.", "info");
+        openModal("Hapus Data", "Hapus semua data hasil ujian?", async () => {
+          try {
+            await firebaseWrite("clearNilai");
+            toast("Data respons dihapus.", "info");
+          } catch (err) {
+            toast("Gagal menghapus data: " + err.message, "error");
+          }
         });
       }
 
@@ -3564,10 +3682,11 @@
       // AKTIF
       // ============================================================
       function renderAktif() {
-        let a = getA().filter(
-          (x) => Date.now() - x.startAt < 8 * 60 * 60 * 1000,
+        const activeCutoff = Date.now() - 8 * 60 * 60 * 1000;
+        let a = getA().filter((x) => x.startAt > activeCutoff);
+        firebaseWrite("pruneAktif", activeCutoff).catch((err) =>
+          console.error("Gagal membersihkan peserta aktif:", err),
         );
-        setA(a);
         const el = document.getElementById("aktif-list");
         if (!a.length) {
           el.innerHTML =
@@ -3695,7 +3814,7 @@
       // ============================================================
       // PESERTA LOGIN
       // ============================================================
-      function doLogin() {
+      async function doLogin() {
         const nama = document.getElementById("inp-nama").value.trim();
         const durasi = Math.min(
           300,
@@ -3721,6 +3840,12 @@
           document.getElementById("login-err").style.display = "block";
           return;
         }
+        try {
+          await waitFirebase();
+        } catch (err) {
+          toast(err.message, "error");
+          return;
+        }
         let pool = getQ();
         if (!pool.length) {
           document.getElementById("login-nosoal").style.display = "block";
@@ -3738,21 +3863,24 @@
         // ambil sejumlah soal per siklus
         pool = pool.slice(0, Math.min(jumlah, pool.length));
         // register aktif
-        const a = getA();
-        a.push({
+        const activeData = {
           nama,
           startAt: Date.now(),
           durSec: durasi * 60,
           jumlahSoal: pool.length,
-        });
-        setA(a);
-        startUjian(nama, durasi, pool, fullscreenMode);
+        };
+        try {
+          const activeId = await firebaseWrite("addAktif", activeData);
+          startUjian(nama, durasi, pool, fullscreenMode, activeId);
+        } catch (err) {
+          toast("Gagal mendaftarkan peserta aktif: " + err.message, "error");
+        }
       }
 
       // ============================================================
       // UJIAN
       // ============================================================
-      function startUjian(nama, durasi, pool, useFullscreen) {
+      function startUjian(nama, durasi, pool, useFullscreen, activeId) {
         clearTimer();
         clearFsWarn();
         ujianState = {
@@ -3765,6 +3893,7 @@
           secLeft: durasi * 60,
           totalSec: durasi * 60,
           startAt: Date.now(),
+          activeId,
         };
         fsEnabled = useFullscreen;
         fsViolations = 0;
@@ -3979,14 +4108,14 @@
         );
       }
 
-      function finishUjian() {
+      async function finishUjian() {
         clearTimer();
         clearFsWarn();
         window.onbeforeunload = null;
         document.removeEventListener("fullscreenchange", onFsChange);
         document.removeEventListener("webkitfullscreenchange", onFsChange);
         if (isFullscreen()) exitFullscreen();
-        const { pool, answers, nama, startAt, durasi } = ujianState;
+        const { pool, answers, nama, startAt, durasi, activeId } = ujianState;
         let benar = 0,
           salah = 0,
           skip = 0;
@@ -4008,8 +4137,7 @@
           nilai = Math.round((benar / total) * 100);
         const durasiSec = Math.floor((Date.now() - startAt) / 1000),
           durasiMnt = Math.ceil(durasiSec / 60);
-        const r = getR();
-        r.push({
+        const resultData = {
           nama,
           nilai,
           benar,
@@ -4018,9 +4146,16 @@
           total,
           durasiMnt,
           selesaiAt: Date.now(),
-        });
-        setR(r);
-        setA(getA().filter((x) => x.nama !== nama));
+          kategori: pool[0]?.cat || "",
+          detail,
+        };
+        try {
+          await firebaseWrite("addNilai", resultData);
+          if (activeId) await firebaseWrite("deleteAktif", activeId);
+          else await firebaseWrite("deleteAktifByName", nama);
+        } catch (err) {
+          toast("Gagal menyimpan hasil ke Firebase: " + err.message, "error");
+        }
         lastResult = {
           nama,
           nilai,
@@ -4074,5 +4209,6 @@
       // INIT
       resetQ();
     </script>
+
   </body>
 </html>
